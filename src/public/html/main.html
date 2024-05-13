@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <script src="https://unpkg.com/pdf-lib@1.4.0"></script>
+  <script src="https://unpkg.com/downloadjs@1.4.7"></script>
+</head>
+
+<body>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+  <!-- Top Navigation Menu -->
+  <div class="topnav">
+    <a href="#home" class="active">Logo</a>
+    <!-- Navigation links (hidden by default) -->
+    <div id="myLinks">
+      <div href="#profile">
+        <a href="#profile" id="email"></a>
+        <a href="#profile" id="name"></a>
+      </div>
+      <a href="#contact">Contact</a>
+      <a href="#about">About</a>
+    </div>
+    <!-- "Hamburger menu" / "Bar icon" to toggle the navigation links -->
+    <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+      <i class="fa fa-bars"></i>
+    </a>
+  </div>
+  <a href="/html/editor.html">Edit PDF</a>
+  <!-- <iframe id="pdf"></iframe> -->
+</body>
+<script>
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const email = document.getElementById('email');
+  email.innerText = `${urlParams.get('email')}`;
+  const name = document.getElementById('name');
+  name.innerText = `${urlParams.get('firstName')} ${urlParams.get('lastName')}`;
+
+  console.log(queryString);
+  function myFunction() {
+    var x = document.getElementById("myLinks");
+    if (x.style.display === "block") {
+      x.style.display = "none";
+    } else {
+      x.style.display = "block";
+    }
+  }
+
+
+
+  const { PDFDocument } = PDFLib;
+  let pdfDoc;
+
+  async function loadPdf() {
+    // Fetch an existing PDF document.
+    const url = 'http://localhost:3000/pdf/pdf';
+    const existingPdfBytes = await fetch(url).then((res) =>
+      res.arrayBuffer(),
+    );
+
+    return PDFDocument.load(existingPdfBytes);
+  }
+
+  async function saveAndRender(doc) {
+    const pdfBytes = await doc.save();
+
+    const pdfDataUri = await doc.saveAsBase64({ dataUri: true });
+    document.getElementById('pdf').src = pdfDataUri;
+  }
+
+  async function addPageToDoc(doc) {
+    doc.addPage();
+    return doc;
+  }
+
+  async function removePageToDoc(doc) {
+    const totalPages = doc.getPageCount();
+    doc.removePage(totalPages - 1);
+    return doc;
+  }
+
+  async function addPage() {
+    pdfDoc = await addPageToDoc(pdfDoc);
+    await saveAndRender(pdfDoc);
+  }
+
+  async function removePage() {
+    pdfDoc = await removePageToDoc(pdfDoc);
+    await saveAndRender(pdfDoc);
+  }
+
+  loadPdf().then((doc) => {
+    pdfDoc = doc;
+    return saveAndRender(pdfDoc);
+  })
+</script>
+
+</html>

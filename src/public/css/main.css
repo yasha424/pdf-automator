@@ -1,0 +1,71 @@
+.topnav {
+  background-color: white;
+  position: relative;
+}
+
+.topnav #myLinks {
+  display: none;
+  position: absolute;
+  text-align: right;
+  right: 0;
+  border-radius: 15px;
+  background: #262626;
+}
+
+.active {
+  background-color: #e92b2b;
+  color: white;
+  border-radius: 15px;
+}
+
+.topnav a {
+  color: white;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  display: block;
+}
+
+.topnav a.icon {
+  background: #262626;
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 0;
+  border-radius: 15px;
+}
+
+.topnav div {
+  color: white;
+  padding-top: 7px;
+  text-decoration: none;
+  font-size: 17px;
+  display: block;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.topnav #email {
+  display: flex;
+}
+
+.topnav #name {
+  display: flex;
+}
+
+iframe {
+  border-width: 0px;
+}
+
+#pdf {
+  width: 80%;
+  padding-left: 10%;
+  padding-right: 10%;
+  padding-top: 1%;
+  height: 1100px;
+  /* height: 90%; */
+  /* padding-left: 10%; */
+  /* padding-right: 10%; */
+  /* height: 80%; */
+}

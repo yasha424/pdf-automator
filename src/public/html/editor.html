@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Drag and Drop Editor</title>
+  <link rel="stylesheet" href="/css/editor.css">
+</head>
+
+<body>
+  <div id="editor">
+    <div id="toolbox">
+      <div class="tool" draggable="true" data-element="text">Text</div>
+      <div class="tool" draggable="true" data-element="image">Image</div>
+      <div class="tool" draggable="true" data-element="table">Table</div>
+    </div>
+    <div id="canvas" ondragover="allowDrop(event)"></div>
+    <div id="property-sidebar"></div>
+    <button class="download-button" onclick="downloadPdf()">Download</button>
+  </div>
+
+  <script>
+    function getPdfElements() {
+      const elements = document.getElementsByClassName("element");
+      let pdf = [];
+      for (let i = 0; i < elements.length; i++) {
+        let text = "";
+        for (const children of elements[0].children) {
+          if (children.classList.contains("text")) {
+            text = children.innerText;
+            break;
+          }
+        }
+        console.log(text);
+        pdf.push({
+          text: {
+            label: text,
+            options: {
+              x: (parseInt(elements[i].style.left) - 330) / 1.83,
+              y: (parseInt(elements[i].style.top) - 6) / 1.83,
+              size: 12
+            }
+          }
+        });
+      }
+      print(pdf)
+      return pdf;
+    }
+
+    function downloadPdf() {
+      const pdf = getPdfElements();
+
+      fetch('/pdf', {
+        method: 'POST',
+        body: JSON.stringify({ pdf }),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        }
+      })
+        .then(response => response.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'file.pdf';
+          document.body.appendChild(a);
+          a.click();
+          URL.revokeObjectURL(url);
+          a.remove();
+        })
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+    
+    const toolbox = document.getElementById("toolbox");
+    const canvas = document.getElementById("canvas");
+    const propertySidebar = document.getElementById("property-sidebar");
+
+    document.addEventListener("DOMContentLoaded", function () {
+      let draggedElement = null;
+      let offsetX, offsetY;
+
+      toolbox.addEventListener("dragstart", function (event) {
+        event.dataTransfer.setData("text/plain", event.target.dataset.element);
+      });
+
+      canvas.addEventListener("dragover", function (event) {
+        event.preventDefault();
+      });
+
+      canvas.addEventListener("drop", function (event) {
+        event.preventDefault();
+        console.log(event);
+        const elementType = event.dataTransfer.getData("text/plain");
+        const element = createElement(elementType, event);
+        canvas.appendChild(element);
+      });
+
+      canvas.addEventListener("click", function (event) {
+        const target = event.target;
+        if (target.classList.contains("delete-button")) {
+          target.parentElement.remove();
+        }
+      });
+
+      canvas.addEventListener("mousedown", function (event) {
+        const target = event.target;
+        if (target.classList.contains("element")) {
+          draggedElement = target;
+          const rect = target.getBoundingClientRect();
+          offsetX = event.clientX - rect.left;
+          offsetY = event.clientY - rect.top;
+        }
+      });
+
+      canvas.addEventListener("mousemove", function (event) {
+        if (draggedElement) {
+          const x = event.clientX - offsetX;
+          const y = event.clientY - offsetY;
+          // draggedElement.style.left = x - 210 + "px";
+          // draggedElement.style.top = y - 20 + "px";
+          draggedElement.style.left = x + "px";
+          draggedElement.style.top = y + "px";
+        }
+      });
+
+      canvas.addEventListener("mouseup", function () {
+        draggedElement = null;
+      });
+
+      function createElement(type, event) {
+        const element = document.createElement("div");
+        console.log(event.screenX, event.screenY);
+        element.style.userSelect = "none";
+        element.style.position = "absolute";
+        // element.style.top = `${event.screenY - 145}px`;
+        // element.style.left = `${event.screenX - 210}px`;
+
+        element.style.top = `${event.screenY - 160}px`;
+        element.style.left = `${event.screenX}px`;
+
+        element.classList.add("element");
+        element.classList.add(type);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.classList.add("delete-button");
+        element.appendChild(deleteButton);
+
+        if (type === "table") {
+          const table = document.createElement("div");
+          table.classList.add("table");
+          table.setAttribute("contenteditable", "true");
+          table.innerHTML = "<table><tr><td>Row 1, Column 1</td><td>Row 1, Column 2</td></tr><tr><td>Row 2, Column 1</td><td>Row 2, Column 2</td></tr></table>";
+          element.appendChild(table);
+
+          table.querySelector('table').addEventListener('keydown', function (event) {
+            const target = event.target;
+            console.log(123);
+            if (event.key === 'Enter') {
+              const rows = target.closest('table').querySelectorAll('tr');
+              const lastRow = rows[rows.length - 1];
+              const lastCell = lastRow.querySelector('td');
+              if (target === lastCell && target.textContent.trim() === '') {
+                const newRow = document.createElement('tr');
+                const columnCount = lastRow.querySelectorAll('td').length;
+                for (let i = 0; i < columnCount; i++) {
+                  const newCell = document.createElement('td');
+                  newCell.style.border = '1px solid black';
+                  newRow.appendChild(newCell);
+                }
+                target.closest('table').appendChild(newRow);
+              }
+            }
+          });
+        } else {
+          const text = document.createElement("div");
+          text.classList.add("text");
+          text.setAttribute("contenteditable", "true");
+          text.innerText = type.charAt(0).toUpperCase() + type.slice(1);
+          element.appendChild(text);
+        }
+
+        return element;
+      }
+    });
+
+    canvas.addEventListener("click", function (event) {
+      const target = event.target;
+      if (target.classList.contains("element")) {
+        showElementProperties(target);
+      }
+    });
+
+    function showElementProperties(element) {
+      const properties = getElementProperties(element);
+      // Display properties in the sidebar
+      propertySidebar.innerHTML = '';
+      for (const [key, value] of Object.entries(properties)) {
+        const propertyDiv = document.createElement('div');
+        propertyDiv.innerHTML = `<strong>${key}:</strong> ${value}`;
+        propertySidebar.appendChild(propertyDiv);
+      }
+    }
+
+    function getElementProperties(element) {
+      const properties = {
+        'Type': element.classList[1]
+      };
+
+      return properties;
+    }
+  </script>
+</body>
+
+</html>
