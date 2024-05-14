@@ -9,7 +9,7 @@
     "start": "node ./dist/src/index.js",
     "clean": "rimraf ./dist",
     "local": "ts-node src",
-    "local:watch": "nodemon ./src -e ts,json,html --exec 'npm run local'"
+    "local:watch": "nodemon ./src -e ts,json,html,js --exec 'npm run local'"
   },
   "author": "",
   "license": "ISC",
@@ -27,6 +27,7 @@
     "express": "^4.19.2",
     "mongodb": "^6.6.1",
     "pdf-lib": "^1.17.1",
+    "pdfkit-table-ts": "^0.0.14",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   }

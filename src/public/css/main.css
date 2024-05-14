@@ -1,71 +1,63 @@
-.topnav {
-  background-color: white;
-  position: relative;
-}
-
-.topnav #myLinks {
-  display: none;
-  position: absolute;
-  text-align: right;
-  right: 0;
+#template-list {
+  width: 100%;
+  border: 2px solid black;
   border-radius: 15px;
-  background: #262626;
+  margin-top: 12px;
+  padding-top: 12px;
 }
 
-.active {
-  background-color: #e92b2b;
-  color: white;
+#template-div {
+  display: flex;
+  width: calc(100% - 20px);
+  height: 48px;
+  margin-top: 20px;
+}
+
+.editor-link {
+  margin-left: auto;
+  margin-right: -20px;
+  background-color: rgb(5, 185, 5);
+  border-radius: 50%;
+  align-content: center;
+  height: 24px;
+  width: 24px;
+  text-align: center;
+  align-self: last baseline;
+}
+
+.editor-link img {
+  height: 14px;
+  width: 14px;
+  margin-top: 4px;
+}
+
+.doc-image {
+  height: 50%;
+  margin-left: 24px;
+}
+
+.pdf-item {
+  height: 120px;
+  border: 1px solid gray;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  margin-left: 12px;
+  margin-right: 12px;
+  align-content: center;
+}
+
+.edit-button, .delete-button {
   border-radius: 15px;
-}
-
-.topnav a {
+  height: 30px;
+  width: 64px;
+  border: 0px;
+  background-color: gray;
   color: white;
-  padding: 14px 16px;
-  text-decoration: none;
-  font-size: 17px;
-  display: block;
+  margin-left: auto;
+  margin-right: 10px;
+  margin-bottom: 10px;
 }
 
-.topnav a.icon {
-  background: #262626;
-  display: block;
-  position: absolute;
-  right: 0;
-  top: 0;
-  border-radius: 15px;
-}
-
-.topnav div {
-  color: white;
-  padding-top: 7px;
-  text-decoration: none;
-  font-size: 17px;
-  display: block;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.topnav #email {
-  display: flex;
-}
-
-.topnav #name {
-  display: flex;
-}
-
-iframe {
-  border-width: 0px;
-}
-
-#pdf {
-  width: 80%;
-  padding-left: 10%;
-  padding-right: 10%;
-  padding-top: 1%;
-  height: 1100px;
-  /* height: 90%; */
-  /* padding-left: 10%; */
-  /* padding-right: 10%; */
-  /* height: 80%; */
+.delete-button {
+  background-color: red;
 }

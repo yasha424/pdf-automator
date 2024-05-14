@@ -1,71 +1,76 @@
 body {
-  margin-top: 40px;
-  display: grid;
+  /* margin-top: 20px; */
+  /* display: grid; */
 }
 
 #editor {
   display: flex;
   flex-direction: row;
-  height: min-content;
-  /* height: 400px; */
   height: 29.7cm;
 }
 
 #toolbox {
-  width: 100px;
+  width: 80px;
   background-color: #f0f0f0;
   border-radius: 18px;
-  padding: 10px;
-  border: 1px solid black;
+  padding-left: 8px;
+  padding-right: 10px;
+  border: 2px solid black;
+  height: fit-content;
 }
 
 #canvas {
-  /* position: absolute; */
-  flex: 1;
+  position: relative;
   background-color: #fff;
   border: 2px solid #ccc;
-  size: 21cm 29.7cm;
-  /* width: 800px; */
-  /* height: 800px; */
+  width: 21cm;
   margin-left: 200px;
   margin-right: 200px;
 }
 
 .tool {
+  width: 100%;
+  height: 100%;
   cursor: pointer;
   text-align: center;
   align-content: center;
-  /* margin-left: 5px; */
-  /* margin-right: 5px; */
-  margin-bottom: 10px;
+  margin-top: 8px;
+  margin-bottom: 8px;
   aspect-ratio: 1;
+  background-size: 80%;
   border-radius: 15px;
   border-width: 2px;
-  border: 2px solid gray;
+  border: 1px solid gray;
   background-color: white;
+}
+
+.tool img {
+  max-width: 35%; 
+  max-height: 35%; 
+  display: block; 
+  margin: auto;
 }
 
 .delete-button {
   background-image: url("/trash.fill.png");
-  background-size: 55%;
+  background-size: 50%;
   background-position-x: center;
   background-position-y: center;
   background-repeat: no-repeat;
   font-size: small;
   color: white;
   background-color: red;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   text-align: center;
   border-width: 0px;
   border-radius: 50%;
+  margin-left: -12px;
 }
 
-.download-button {
-  width: fit-content;
-  /* max-width: fit-content; */
+.download-button, .save-button {
+  width: 100%;
   height: 40px;
-  /* aspect-ratio: 1; */
   border-radius: 15px;
   border-width: 0px;
   margin-right: 10px;
@@ -86,13 +91,104 @@ th, td {
   border: 1px solid;
 }
 
+.resize-handle {
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  width: 10px;
+  height: 10px;
+  cursor: nwse-resize;
+  background-color: #000000;
+}
+
 #property-sidebar {
-  width: 100px;
+  width: 160px;
+  height: fit-content;
   padding: 10px;
-  margin-right: 10px;
   background-color: #f0f0f0;
   border: 1px solid black;
-  /* border-width: 2px;
-  border-color: black; */
   border-radius: 18px;
+  margin-left: auto; 
+  margin-right: 10px;
+}
+
+.topnav {
+  background-color: white;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.topnav #myLinks {
+  display: none;
+  position: absolute;
+  text-align: right;
+  right: 0;
+  border-radius: 15px;
+  background: #262626;
+}
+
+.active {
+  background-color: #e92b2b;
+  color: white;
+  border-radius: 15px;
+}
+
+.topnav a {
+  color: white;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+  display: block;
+}
+
+.topnav a.icon {
+  background: #262626;
+  display: block;
+  position: absolute;
+  right: 0;
+  top: 0;
+  border-radius: 15px;
+}
+
+.topnav div {
+  color: white;
+  padding-top: 7px;
+  text-decoration: none;
+  font-size: 17px;
+  display: block;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.topnav #email {
+  display: flex;
+}
+
+.topnav #name {
+  display: flex;
+}
+
+.buttons {
+  display: grid;
+  height: fit-content;
+}
+
+.save-button {
+  background-color: rgb(5, 185, 5);
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.save-button:hover {
+  cursor: pointer;
+}
+
+.element .text-field {
+  border: 1px solid black;
+  min-height: 20px;
+}
+
+.element .box {
+  border: 1px solid black;
 }

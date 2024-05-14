@@ -24,9 +24,20 @@ function createUserTable() {
   )`);
 }
 
+function createPdfTemplateTable() {
+  db.exec(`CREATE TABLE IF NOT EXISTS pdfTemplates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    userEmail VARCHAR(200) NOT NULL,
+    pdfJson TEXT NOT NULL
+  )`);
+}
+
 (() => {
-  db.all('SELECT * FROM users', (err, rows) => {
-    console.log(rows);
+  // db.exec('DELETE FROM pdfTemplates');
+  db.all('SELECT * FROM pdfTemplates', (err, rows: any) => {
+    for (let i = 0; i < rows.length; i++) {
+      // console.log(rows[i]);
+    }
   });
 })();
 
@@ -54,6 +65,61 @@ router.get('/login', async (req: Request, res: Response) => {
       // res.json({ status: 200 });
     } else {
       res.json({ status: 401 });
+    }
+  });
+});
+
+router.post('/save-pdf', async (req: Request, res: Response) => {
+  const email = req.body.email;
+  const pdf = req.body.pdf;
+
+  if (email == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+  if (Array.isArray(pdf) && !pdf.length) {
+    res.json({ status: 404 });
+    return;
+  }
+
+  createPdfTemplateTable();
+  const pdfString = JSON.stringify(pdf).replace(/\"/g, "&");
+  db.run(`INSERT INTO pdfTemplates (userEmail, pdfJson) VALUES (
+    "${email}", "${pdfString}"
+  )`);
+
+  res.json({status: 200})
+});
+
+router.get('/pdf-templates/:email', (req: Request, res: Response) => {
+  if (req.params.email == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+  db.all('SELECT * FROM pdfTemplates WHERE userEmail = ?', [req.params.email], (err, rows: any) => {
+    let pdfs = [];
+    for (let i = 0; i < rows.length; i++) {
+      pdfs.push({ pdf: JSON.parse(rows[i].pdfJson.replace(/&/g, "\"")), id: rows[i].id });
+    }
+    res.json(pdfs);
+  })
+});
+
+router.delete('/pdf-templates/:email/:id', (req: Request, res: Response) => {
+  if (req.params.email == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+  if (req.params.id == undefined) {
+    res.json({ status: 404 });
+    return;
+  }
+
+  db.run('DELETE FROM pdfTemplates WHERE id = ?', req.params.id, (err: any) => {
+    console.log(err);
+    
+    if (err == null) {
+      res.json({ status: 200 });
     }
   });
 });
