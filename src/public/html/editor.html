@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="/css/editor.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <script src="/components/topnav.js" type="text/javascript" defer></script>
+  <script src="/components/share-button.js" type="text/javascript" defer></script>
   <script src="/js/editor.js" type="text/javascript" defer></script>
 </head>
 
@@ -32,12 +33,18 @@
       </div>
     </div>
     <div id="canvas" ondragover="allowDrop(event)"></div>
-    <div id="property-sidebar"></div>
+    <div>
+      <input type="text" placeholder="Filename" id="filename">
+      <div id="property-sidebar"></div>
+    </div>
+
     <div class="buttons">
       <button class="save-button" onclick="saveTemplate()" title="Save Template">Save</button>
       <button class="download-button" onclick="downloadPdf()" title="Download PDF">Download</button>
+      <share-button></share-button>
     </div>
   </div>
+  <div id="alert">Alert</div>
 </body>
 
 </html>

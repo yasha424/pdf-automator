@@ -28,28 +28,34 @@ function createPdfTemplateTable() {
   db.exec(`CREATE TABLE IF NOT EXISTS pdfTemplates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     userEmail VARCHAR(200) NOT NULL,
+    filename VARCHAR(200) NOT NULL,
     pdfJson TEXT NOT NULL
   )`);
 }
 
 (() => {
+  createPdfTemplateTable();
+  createUserTable();
   // db.exec('DELETE FROM pdfTemplates');
-  db.all('SELECT * FROM pdfTemplates', (err, rows: any) => {
-    for (let i = 0; i < rows.length; i++) {
+  // db.all('SELECT * FROM pdfTemplates', (err, rows: any) => {
+    // for (let i = 0; i < rows.length; i++) {
       // console.log(rows[i]);
-    }
-  });
+    // }
+  // });
 })();
 
 router.get('/register', (req: Request, res: Response) => {
   const query = req.query;
+  console.log(query);
+  
 
   if (query.email !== undefined && query.password != undefined && query.password == query.repassword) {
     createUserTable();
     db.run(`INSERT INTO users (firstName, lastName, email, password) VALUES (
       "${query.first}", "${query.last}", "${query.email}", "${query.password}"
     )`);
-    res.redirect(`/html/main.html?email=${query.email}&firstName=${query.first}&lastName=${query.last}`);
+
+    res.redirect('/main' + `?email=${query.email}&lastName=${query.last}&firstName=${query.first}`);
   } else {
     res.json({ status: 401 });
   }
@@ -72,7 +78,13 @@ router.get('/login', async (req: Request, res: Response) => {
 router.post('/save-pdf', async (req: Request, res: Response) => {
   const email = req.body.email;
   const pdf = req.body.pdf;
+  const filename = req.body.filename;
 
+
+  if (filename == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
   if (email == undefined) {
     res.json({ status: 401 });
     return;
@@ -82,10 +94,9 @@ router.post('/save-pdf', async (req: Request, res: Response) => {
     return;
   }
 
-  createPdfTemplateTable();
   const pdfString = JSON.stringify(pdf).replace(/\"/g, "&");
-  db.run(`INSERT INTO pdfTemplates (userEmail, pdfJson) VALUES (
-    "${email}", "${pdfString}"
+  db.run(`INSERT INTO pdfTemplates (userEmail, pdfJson, filename) VALUES (
+    "${email}", "${pdfString}", "${filename}"
   )`);
 
   res.json({status: 200})
@@ -99,9 +110,23 @@ router.get('/pdf-templates/:email', (req: Request, res: Response) => {
   db.all('SELECT * FROM pdfTemplates WHERE userEmail = ?', [req.params.email], (err, rows: any) => {
     let pdfs = [];
     for (let i = 0; i < rows.length; i++) {
-      pdfs.push({ pdf: JSON.parse(rows[i].pdfJson.replace(/&/g, "\"")), id: rows[i].id });
+      pdfs.push({ pdf: JSON.parse(rows[i].pdfJson.replace(/&/g, "\"")), id: rows[i].id, filename: rows[i].filename });
     }
     res.json(pdfs);
+  })
+});
+
+router.get('/pdf-template/:id', (req: Request, res: Response) => {
+  if (req.params.id == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+  db.get('SELECT * FROM pdfTemplates WHERE id = ?', [req.params.id], (err, row: any) => {
+    if (row.pdfJson) {
+      res.json({ pdf: row.pdfJson.replace(/&/g, "\""), id: row.id, filename: row.filename });
+    } else {
+      return res.json({ status: 404 });
+    }
   })
 });
 

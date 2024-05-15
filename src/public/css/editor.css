@@ -1,6 +1,5 @@
 body {
-  /* margin-top: 20px; */
-  /* display: grid; */
+  background-color: #cccccc22;
 }
 
 #editor {
@@ -15,8 +14,9 @@ body {
   border-radius: 18px;
   padding-left: 8px;
   padding-right: 10px;
-  border: 2px solid black;
   height: fit-content;
+  background-color: rgba(255, 0, 0, 0.08);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 #canvas {
@@ -26,6 +26,7 @@ body {
   width: 21cm;
   margin-left: 200px;
   margin-right: 200px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .tool {
@@ -40,7 +41,7 @@ body {
   background-size: 80%;
   border-radius: 15px;
   border-width: 2px;
-  border: 1px solid gray;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   background-color: white;
 }
 
@@ -66,6 +67,7 @@ body {
   border-width: 0px;
   border-radius: 50%;
   margin-left: -12px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .download-button, .save-button {
@@ -77,6 +79,7 @@ body {
   color: white;
   padding: 10px;
   background-color: #e92b2b;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .download-button:hover {
@@ -110,63 +113,11 @@ th, td {
   border-radius: 18px;
   margin-left: auto; 
   margin-right: 10px;
+  border: none;
 }
 
 .topnav {
-  background-color: white;
-  position: relative;
   margin-bottom: 20px;
-}
-
-.topnav #myLinks {
-  display: none;
-  position: absolute;
-  text-align: right;
-  right: 0;
-  border-radius: 15px;
-  background: #262626;
-}
-
-.active {
-  background-color: #e92b2b;
-  color: white;
-  border-radius: 15px;
-}
-
-.topnav a {
-  color: white;
-  padding: 14px 16px;
-  text-decoration: none;
-  font-size: 17px;
-  display: block;
-}
-
-.topnav a.icon {
-  background: #262626;
-  display: block;
-  position: absolute;
-  right: 0;
-  top: 0;
-  border-radius: 15px;
-}
-
-.topnav div {
-  color: white;
-  padding-top: 7px;
-  text-decoration: none;
-  font-size: 17px;
-  display: block;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-}
-
-.topnav #email {
-  display: flex;
-}
-
-.topnav #name {
-  display: flex;
 }
 
 .buttons {
@@ -178,6 +129,7 @@ th, td {
   background-color: rgb(5, 185, 5);
   width: 100%;
   margin-bottom: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .save-button:hover {
@@ -191,4 +143,38 @@ th, td {
 
 .element .box {
   border: 1px solid black;
+}
+
+input {
+  width: 174px;
+  margin-bottom: 20px;
+  height: 20px;
+  border-radius: 15px;
+  padding: 4px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  border: none;
+}
+
+#alert {
+  display: block;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  height: 100px;
+  width: 240px;
+  background-color: rgba(255, 0, 0);
+  opacity: 0.9;
+  z-index: 10;
+  border-radius: 15px;
+  text-align: center;
+  align-content: center;
+  color: white;
+  transition: all 0.3s ease-out;
+  transform: translate(120%, 0);
+  padding: 8px;
+  /* font-family: Arial, Helvetica, sans-serif; */
+}
+
+.active {
+  transform: translate(0, 0) !important;
 }

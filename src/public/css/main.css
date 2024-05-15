@@ -1,21 +1,22 @@
 #template-list {
-  width: 100%;
-  border: 2px solid black;
+  width: calc(100% - 4px);
   border-radius: 15px;
   margin-top: 12px;
   padding-top: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  background-color: rgba(255, 0, 0, 0.08);
+  padding-bottom: 2px;
 }
 
 #template-div {
   display: flex;
-  width: calc(100% - 20px);
   height: 48px;
   margin-top: 20px;
 }
 
 .editor-link {
   margin-left: auto;
-  margin-right: -20px;
+  margin-right: 0px;
   background-color: rgb(5, 185, 5);
   border-radius: 50%;
   align-content: center;
@@ -23,6 +24,7 @@
   width: 24px;
   text-align: center;
   align-self: last baseline;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
 .editor-link img {
@@ -38,12 +40,15 @@
 
 .pdf-item {
   height: 120px;
-  border: 1px solid gray;
   border-radius: 12px;
   margin-bottom: 12px;
   margin-left: 12px;
   margin-right: 12px;
   align-content: center;
+  place-items: center start;;
+  display: flex;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .edit-button, .delete-button {
@@ -55,9 +60,22 @@
   color: white;
   margin-left: auto;
   margin-right: 10px;
-  margin-bottom: 10px;
+}
+
+.edit-button:hover, .delete-button:hover {
+  cursor: pointer;
 }
 
 .delete-button {
   background-color: red;
+  margin-right: 0px;
+}
+
+.buttons-div {
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.filename {
+  margin-bottom: 10px;
 }

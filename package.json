@@ -24,8 +24,8 @@
     "typescript": "^5.4.5"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mongodb": "^6.6.1",
     "pdf-lib": "^1.17.1",
     "pdfkit-table-ts": "^0.0.14",
     "sqlite": "^5.1.1",

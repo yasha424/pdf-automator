@@ -15,7 +15,7 @@
   <topnav-component></topnav-component>
   <div id="template-div">
     <h2>Templates</h2>
-    <a href="/html/editor.html" id="editor-link" class="editor-link" title="Add new template">
+    <a href="/editor" id="editor-link" class="editor-link" title="Add new template">
       <img src="/plus.png" alt="" width="24px" height="24px" >
     </a>
   </div>
@@ -40,6 +40,7 @@
   .then(response => response.json())
   .then(json => {
     const pdfList = document.getElementById("template-list");
+
     for (let i = 0; i < json.length; i++) {
       const pdfItem = document.createElement("div");
       pdfItem.classList.add("pdf-item");
@@ -52,7 +53,11 @@
       const editButton = document.createElement("button");
       editButton.innerText = "Edit";
       editButton.classList.add("edit-button");
-      pdfItem.appendChild(editButton);
+      // editButton.href = `/editor?email=${email}&firstName=${firstName}&lastName=${lastName}&id=${json[i].id}`;
+      editButton.onclick = (() => {
+        window.location = `/editor?email=${email}&firstName=${firstName}&lastName=${lastName}&id=${json[i].id}`;
+      });
+      // pdfItem.appendChild(editButton);
 
       const deleteButton = document.createElement("button");
       deleteButton.innerText = "Delete";
@@ -67,19 +72,35 @@
         })
         .then(response => response.json())
         .then(json => {
-          console.log(json);
           if (json.status === 200) {
-            // console.log(123);
             pdfList.removeChild(pdfItem);
           }
         });
       });
 
-      pdfItem.appendChild(deleteButton);
+      const filename = document.createElement("div");
+      filename.classList.add("filename");
+      filename.innerText = json[i].filename;
+      
+      const buttons = document.createElement("div");
+      buttons.classList.add("buttons-div");
+      buttons.appendChild(editButton);
+      buttons.appendChild(deleteButton);
+
+      const info = document.createElement("div");
+      info.classList.add("info");
+      info.appendChild(filename);
+      info.appendChild(buttons);
+
+      pdfItem.appendChild(info);
 
       pdfList.appendChild(pdfItem)
     }
-  }); 
+  });
+  
+  window.onload = (() => {
+    setParams();
+  });
 </script>
 
 </html>

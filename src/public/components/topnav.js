@@ -8,14 +8,14 @@ class Topnav extends HTMLElement {
   <link rel="stylesheet" href="/css/topnav.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <div class="topnav">
-    <a class="active" id="home-link">Logo</a>
+    <div class="active" id="home-link"><a id="logo"><img src="/logo.png"></a></div>
     <div id="myLinks">
       <div href="#profile">
         <a href="#profile" id="email"></a>
         <a href="#profile" id="name"></a>
       </div>
-      <a href="#contact">Contact</a>
-      <a href="#about">About</a>
+      <div><a href="#contact">Contact</a></div>
+      <div><a href="#about">About</a></div>
     </div>
     <a class="icon" onclick="toggleTopnav()">
       <i class="fa fa-bars"></i>
@@ -36,8 +36,9 @@ function setParams() {
   document.getElementById('email').innerText = email;
   document.getElementById('name').innerText = firstName + " " + lastName;
 
-  const logo = document.getElementById("home-link");
-  logo.href = `/html/main.html?email=${email}&firstName=${firstName}&lastName=${lastName}`;
+  const logo = document.getElementById("logo");
+  logo.href = `/main?email=${email}&firstName=${firstName}&lastName=${lastName}`;
+  // logo.href = `/html/main.html?email=${email}&firstName=${firstName}&lastName=${lastName}`;
 }
 
 function toggleTopnav() {

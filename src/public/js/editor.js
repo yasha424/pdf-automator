@@ -63,16 +63,21 @@ function saveTemplate() {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   const email = urlParams.get('email');
-  console.log(pdf);
+  const filename = document.getElementById("filename").value;
+
   fetch("/api/save-pdf", {
     method: "POST",
-    body: JSON.stringify({ pdf, email: email }),
+    body: JSON.stringify({ pdf, email: email, filename: filename }),
     headers: {
       "Content-type": "application/json; charset=UTF-8"
     }
   })
   .then(response => response.json())
-  .then(json => { console.log(json); });
+  .then(json => { 
+    if (json.status === 200) {
+      toggleAlert("PDF succesfully saved.", "green");
+    }
+  });
 }
 
 function downloadPdf() {
@@ -252,7 +257,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
       element.appendChild(handler);
     } else if (type === "box") {
-      console.log(123);
       const box = document.createElement("div");
       box.classList.add("box");
       box.style.width = "60px";
@@ -292,7 +296,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function handleKeyDown(event) {
-    console.log(event.target);
     if (event.key === "Enter") {
       const target = event.target;
 
@@ -304,7 +307,7 @@ document.addEventListener("DOMContentLoaded", function () {
         table.appendChild(newRow);
       }
     } else if (event.key === "Backspace") {
-      console.log(123);
+
     }
   }
 });
@@ -326,7 +329,6 @@ canvas.addEventListener("click", function (event) {
 
 function showElementProperties(element) {
   const properties = getElementProperties(element);
-  console.log(properties);
 
   propertySidebar.innerHTML = "";
   for (const [key, value] of Object.entries(properties)) {
@@ -376,5 +378,108 @@ function addListener(handler, clicked, startX, startY, startWidth, element) {
   handler.addEventListener("mouseup", function(event) {
     clicked = false;
   });
+}
 
+// var id;
+
+window.onload = (() => {
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const id = urlParams.get('id');
+
+  if (id) {
+    fetch("/api/pdf-template/" + id, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    })
+    .then(response => response.json())
+    .then(json => {
+      const pdf = JSON.parse(json.pdf);
+
+      for (let page = 0; page < pdf.length; page++) {
+        for (const key in pdf[page]) {
+            const element = createElement(key, pdf[page][key].options, pdf[page][key].label);
+            canvas.appendChild(element);
+        }
+      }
+
+      document.getElementById("filename").value = json.filename;
+    });
+  }
+
+  setParams();
+});
+
+function createElement(type, options, label) {
+  const element = document.createElement("div");
+  element.style.userSelect = "none";
+  element.style.position = "absolute";
+
+  element.classList.add("element");
+  element.classList.add(type);
+
+  const deleteButton = document.createElement("button");
+  deleteButton.classList.add("delete-button");
+  element.appendChild(deleteButton);
+  
+  const rect = canvas.getBoundingClientRect();
+
+  element.style.top = `${(options.y + rect.top - 112) * 1.36}px`;
+  element.style.left = `${(options.x + rect.left - 456) * 1.34}px`;
+  
+  if (type === "box") {
+    const box = document.createElement("div");
+    box.classList.add("box");
+    box.style.width = options.width * 1.34 + "px";
+    box.style.height = options.height * 1.34 + "px";
+    element.appendChild(box);
+
+    const handler = document.createElement("div");
+    handler.classList.add("resize-handle");
+
+    let clicked = false;
+    let startX, startY, startWidth;
+
+    addListener(handler, clicked, startX, startY, startWidth, box);
+
+    element.appendChild(handler);
+  } else if (type === "text") {
+    const text = document.createElement("div");
+    text.classList.add("text");
+    text.style.width = options.width * 1.34 + "px";
+    text.style.height = options.height * 1.34 + "px";
+    text.innerText = label;
+    element.appendChild(text);
+
+    const handler = document.createElement("div");
+    handler.classList.add("resize-handle");
+
+    let clicked = false;
+    let startX, startY, startWidth;
+
+    addListener(handler, clicked, startX, startY, startWidth, text);
+
+    element.appendChild(handler);
+  } else if (type === "textField") {
+    const textField = document.createElement("div");
+    textField.classList.add("text-field");
+    textField.style.width = options.width * 1.34 + "px";
+    textField.style.height = options.height * 1.34 + "px";
+    textField.innerText = label;
+    element.appendChild(textField);
+
+    const handler = document.createElement("div");
+    handler.classList.add("resize-handle");
+
+    let clicked = false;
+    let startX, startY, startWidth;
+
+    addListener(handler, clicked, startX, startY, startWidth, textField);
+
+    element.appendChild(handler);
+  }
+
+  return element;
 }
