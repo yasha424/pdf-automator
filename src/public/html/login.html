@@ -1,30 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>HTML Login Form</title>
-    <link rel="stylesheet" href="/css/login.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML Login Form</title>
+  <link rel="stylesheet" href="/css/login.css">
 </head>
 
 <body>
-    <div class="main">
-        <h1>PDF Configurator</h1>
-        <h3>Enter your login credentials</h3>
-        <form action="/api/login">
-            <input type="text" id="email" name="email" placeholder="Email" required>
+  <div class="main">
+    <h1>PDF Configurator</h1>
+    <h3>Enter your login credentials</h3>
+    <form action="/api/login">
+      <input type="text" id="email" name="email" placeholder="Email" required>
 
-            <input type="password" id="password" name="password" placeholder="Password" required>
+      <input type="password" id="password" name="password" placeholder="Password" required>
 
-            <div class="wrap">
-                <button type="submit" onclick="solve()">
-                    Login
-                </button>
-            </div>
-        </form>
-        <a href="/html/register.html" style="text-decoration: none;">
-            Create an account
-        </a>
-    </div>
+      <div class="wrap">
+        <button type="submit" onclick="solve()">
+          Login
+        </button>
+      </div>
+    </form>
+    <a href="/html/register.html" style="text-decoration: none;">
+      Create an account
+    </a>
+  </div>
 </body>
 
 </html>

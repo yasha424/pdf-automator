@@ -5,7 +5,7 @@ class DataBase {
   private db: Database;
  
   constructor() {
-    var dir = __dirname + '/../tmp';
+    const dir = __dirname + '/../tmp';
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
     }  
@@ -45,7 +45,11 @@ class DataBase {
   }
 
   insert(table: string, propetries: string, values: string, callback?: (err: Error | null) => void) {
-    this.db.run(`INSERT INTO ${table} (${propetries}) VALUES (${values})`, callback);
+    if (validateValues(values)) {
+      this.db.run(`INSERT INTO ${table} (${propetries}) VALUES (${values})`, callback);
+    } else {
+      callback?.(new Error('Invalid values'));
+    }
   }
 
   get(table: string, propetries: string[], where?: string[], equals?: any[], callback?: (err: Error | null, result: any) => void) {
@@ -96,6 +100,10 @@ class DataBase {
     this.db.run(request, equals, (err: any) => {
       callback?.(err);
     });
+  }
+
+  private validateValues(values: string[]): boolean {
+    return true;
   }
 }
 

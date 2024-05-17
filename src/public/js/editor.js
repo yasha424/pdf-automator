@@ -152,8 +152,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (draggedElement) {
       const x = event.clientX - offsetX + window.pageXOffset;
       const y = event.clientY - offsetY + window.pageYOffset;
-      // draggedElement.style.left = x - 310 + "px";
-      // draggedElement.style.top = y - 85 + "px";
+
       draggedElement.style.left = x - 450 + "px";
       draggedElement.style.top = y - 90 + "px";
     }
@@ -182,10 +181,11 @@ document.addEventListener("DOMContentLoaded", function () {
     if (type === "table") {
       const table = document.createElement("div");
       table.classList.add("table");
-      // table.classList.add(makeid(8));
       table.setAttribute("contenteditable", "true");
+
       let rows = [];
       let columns = [];
+
       for (let i = 0; i < 2; i++) {
         const row = document.createElement("tr");
         for (let j = 0; j < 2; j++) {
@@ -194,7 +194,6 @@ document.addEventListener("DOMContentLoaded", function () {
           columns.push(column);
           row.appendChild(column);
         }
-        // row.innerHTML = "<td>Row 1, Column 1</td><td>Row 1, Column 2</td>";
         table.appendChild(row);
         rows.push(row);
       }
@@ -205,7 +204,7 @@ document.addEventListener("DOMContentLoaded", function () {
       handler.classList.add("resize-handle");
 
       let clicked = false;
-      let startX, startY, startWidth;
+      let startX, startY, startWidth, startHeight;
 
       handler.addEventListener("mousedown", function(event) {
         clicked = true;
@@ -379,8 +378,6 @@ function addListener(handler, clicked, startX, startY, startWidth, element) {
     clicked = false;
   });
 }
-
-// var id;
 
 window.onload = (() => {
   const queryString = window.location.search;

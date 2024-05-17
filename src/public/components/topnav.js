@@ -42,7 +42,7 @@ function setParams() {
 }
 
 function toggleTopnav() {
-  var menu = document.getElementById("myLinks");
+  let menu = document.getElementById("myLinks");
   if (menu.style.display === "block") {
     menu.style.display = "none";
   } else {

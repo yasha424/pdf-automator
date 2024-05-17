@@ -9,7 +9,6 @@ body {
 
 #toolbox {
   width: 80px;
-  background-color: #f0f0f0;
   border-radius: 18px;
   padding-left: 8px;
   padding-right: 10px;
@@ -109,11 +108,9 @@ th, td {
   height: fit-content;
   padding: 10px;
   background-color: #f0f0f0;
-  border: 1px solid black;
   border-radius: 18px;
   margin-left: auto; 
   margin-right: 10px;
-  border: none;
 }
 
 .topnav {

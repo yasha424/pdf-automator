@@ -45,20 +45,17 @@ function sendPdf() {
 }
 
 function toggleShareOptions() {
-  var menu = document.getElementById("share-options");
+  let shareOptions = document.getElementById("share-options");
 
-  if (menu.style.display === "grid") {
-    menu.style.display = "none";
+  if (shareOptions.style.display === "grid") {
+    shareOptions.style.display = "none";
   } else {
-    menu.style.display = "grid";
+    shareOptions.style.display = "grid";
   }
 }
 
 function toggleAlert(message, color) {
-  // if (alert.classList.contains("active")) {
-    // alert.classList.remove("active");
-  // }
-  var alert = document.getElementById("alert");
+  let alert = document.getElementById("alert");
   alert.classList.add("active");
   setTimeout(() => {
     alert.classList.remove("active");

@@ -1,5 +1,4 @@
 import { degrees, PDFDocument as PDFLib, StandardFonts, rgb } from 'pdf-lib';
-// const { PDFDocument } = require("pdfkit-table-ts");
 
 class PDF {
   async makePdf(pdf: any) {
