@@ -1,8 +1,4 @@
 class ShareButton extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   connectedCallback() {
     this.innerHTML = `
   <link rel="stylesheet" href="/css/share-button.css">

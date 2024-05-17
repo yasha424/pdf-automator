@@ -16,7 +16,7 @@
   <div id="template-div">
     <h2>Saved Templates</h2>
     <a href="/editor" id="editor-link" class="editor-link" title="Add new template">
-      <img src="/plus.png" alt="" width="24px" height="24px">
+      <img src="/images/plus.png" alt="" width="24px" height="24px">
     </a>
   </div>
   <div id="template-list"></div>
@@ -45,8 +45,8 @@
     .then(json => {
       const pdfList = document.getElementById("template-list");
 
-      for (let i = 0; i < json.length; i++) {
-        insertPdfInto(pdfList, json[i], true);
+      for (let item of json) {
+        insertPdfInto(pdfList, item, true);
       }
     });
 
@@ -60,8 +60,8 @@
     .then(json => {
       const pdfList = document.getElementById("default-template-list");
 
-      for (let i = 0; i < json.length; i++) {
-        insertPdfInto(pdfList, json[i], false);
+      for (let item of json) {
+        insertPdfInto(pdfList, item, false);
       }
     });
 
@@ -74,7 +74,7 @@
     pdfItem.classList.add("pdf-item");
 
     const docImage = document.createElement("img");
-    docImage.src = "/doc.png";
+    docImage.src = "/images/doc.png";
     docImage.classList.add("doc-image");
     pdfItem.appendChild(docImage);
 

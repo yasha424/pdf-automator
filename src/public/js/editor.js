@@ -1,23 +1,23 @@
 function getPdfElements() {
   const elements = document.getElementsByClassName("element");
   let pdf = [];
-  for (let i = 0; i < elements.length; i++) {
+  for (let item of elements) {
     let element = {};
-    for (const children of elements[i].children) {
+    for (const children of item.children) {
       if (children.classList.contains("text")) {
         element = {
           text: {
             label: children.innerText,
             options: {
-              x: (parseInt(elements[i].style.left) / 1.34),
-              y: (parseInt(elements[i].style.top) / 1.34) + 28,
+              x: (parseInt(item.style.left) / 1.34),
+              y: (parseInt(item.style.top) / 1.34) + 28,
               size: 12
             }
           }
         };
         break;
       } else if (children.classList.contains("table")) {
-
+        console.log(children);
       } else if (children.classList.contains("text-field")) {
         const width = parseInt(children.style.width) / 1.34;
         const height = parseInt(children.style.height) / 1.34;
@@ -26,8 +26,8 @@ function getPdfElements() {
           textField: {
             label: children.innerText,
             options: {
-              x: parseInt(elements[i].style.left) / 1.34,
-              y: parseInt(elements[i].style.top) / 1.35 + 20,
+              x: parseInt(item.style.left) / 1.34,
+              y: parseInt(item.style.top) / 1.35 + 20,
               width: width,
               height: height
             }
@@ -41,8 +41,8 @@ function getPdfElements() {
         element = {
           box: {
             options: {
-              x: parseInt(elements[i].style.left) / 1.34,
-              y: parseInt(elements[i].style.top) / 1.35 + 20,
+              x: parseInt(item.style.left) / 1.34,
+              y: parseInt(item.style.top) / 1.35 + 20,
               width: width,
               height: height
             }
@@ -80,10 +80,33 @@ function saveTemplate() {
   });
 }
 
+function saveDefaultTemplate() {
+  const pdf = getPdfElements();
+  
+  const queryString = window.location.search;
+  const urlParams = new URLSearchParams(queryString);
+  const email = urlParams.get('email');
+  const filename = document.getElementById("filename").value;
+
+  fetch("/api/save-default-pdf", {
+    method: "POST",
+    body: JSON.stringify({ pdf, filename: filename }),
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+  .then(response => response.json())
+  .then(json => { 
+    if (json.status === 200) {
+      toggleAlert("PDF succesfully saved.", "green");
+    }
+  });
+}
+
 function downloadPdf() {
   const pdf = getPdfElements();
 
-  fetch("/pdf", {
+  fetch("api/pdf", {
     method: "POST",
     body: JSON.stringify({ pdf }),
     headers: {
@@ -150,11 +173,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   canvas.addEventListener("mousemove", function (event) {
     if (draggedElement) {
-      const x = event.clientX - offsetX + window.pageXOffset;
-      const y = event.clientY - offsetY + window.pageYOffset;
+      let rect = canvas.getBoundingClientRect();
+      const x = event.clientX - offsetX - rect.x;
+      const y = event.clientY - offsetY - rect.y;
 
-      draggedElement.style.left = x - 450 + "px";
-      draggedElement.style.top = y - 90 + "px";
+      console.log(draggedElement.style.height);
+      if (x > 0 - 20 && x < rect.width + draggedElement.style.width - 10) {
+        draggedElement.style.left = x + "px";
+      }
+      if (y > 0 - 60 && y < rect.height + draggedElement.style.height - 40) {
+        draggedElement.style.top = y + "px";
+      }
     }
 });
 
@@ -221,12 +250,12 @@ document.addEventListener("DOMContentLoaded", function () {
         table.style.width = newWidth + "px";
         table.style.height = newHeight + "px";
         
-        for (let i = 0; i < rows.length; i++) {
-          rows[i].style.height = (newHeight / rows.length) + "px";
+        for (let row of rows) {
+          row.style.height = (newHeight / rows.length) + "px";
         }
 
-        for (let i = 0; i < columns.length; i++) {
-          columns[i].style.width = (newWidth / (columns.length / rows.length)) + "px";
+        for (let column of columns) {
+          column.style.width = (newWidth / (columns.length / rows.length)) + "px";
         }
       });
 
@@ -250,9 +279,9 @@ document.addEventListener("DOMContentLoaded", function () {
       handler.classList.add("resize-handle");
 
       let clicked = false;
-      let startX, startY, startWidth;
+      let startX, startY, startWidth, startHeight;
 
-      addListener(handler, clicked, startX, startY, startWidth, text);
+      addListener(handler, clicked, startX, startY, startWidth, startHeight, text);
 
       element.appendChild(handler);
     } else if (type === "box") {
@@ -266,9 +295,9 @@ document.addEventListener("DOMContentLoaded", function () {
       handler.classList.add("resize-handle");
 
       let clicked = false;
-      let startX, startY, startWidth;
+      let startX, startY, startWidth, startHeight;
 
-      addListener(handler, clicked, startX, startY, startWidth, box);
+      addListener(handler, clicked, startX, startY, startWidth, startHeight, box);
 
       element.appendChild(handler);
 
@@ -284,30 +313,14 @@ document.addEventListener("DOMContentLoaded", function () {
       handler.classList.add("resize-handle");
 
       let clicked = false;
-      let startX, startY, startWidth;
+      let startX, startY, startWidth, startHeight;
 
-      addListener(handler, clicked, startX, startY, startWidth, text);
+      addListener(handler, clicked, startX, startY, startWidth, startHeight, text);
 
       element.appendChild(handler);
     }
 
     return element;
-  }
-
-  function handleKeyDown(event) {
-    if (event.key === "Enter") {
-      const target = event.target;
-
-      if (target.classList.contains("table")) {
-        const table = document.getElementsByClassName(target.childNodes[0].classList[0])[0];
-        const newRow = document.createElement("tr");
-        newRow.innerHTML = "<td></td><td></td>";
-
-        table.appendChild(newRow);
-      }
-    } else if (event.key === "Backspace") {
-
-    }
   }
 });
 
@@ -322,7 +335,7 @@ canvas.addEventListener("click", function (event) {
     showElementProperties(selectedTarget);
     selectedTarget.childNodes[1].style.border = "1px solid black";
   } else {
-
+    console.log('hide element properties');
   }
 });
 
@@ -357,7 +370,7 @@ function makeid(length) {
   return result;
 }
 
-function addListener(handler, clicked, startX, startY, startWidth, element) {
+function addListener(handler, clicked, startX, startY, startWidth, startHeight, element) {
   handler.addEventListener("mousedown", function(event) {
     clicked = true;
     startX = event.pageX;
@@ -396,9 +409,9 @@ window.onload = (() => {
     .then(json => {
       const pdf = JSON.parse(json.pdf);
 
-      for (let page = 0; page < pdf.length; page++) {
-        for (const key in pdf[page]) {
-            const element = createElement(key, pdf[page][key].options, pdf[page][key].label);
+      for (let page of pdf) {
+        for (const key in page) {
+            const element = createElement(key, page[key].options, page[key].label);
             canvas.appendChild(element);
         }
       }
@@ -416,9 +429,9 @@ window.onload = (() => {
     .then(json => {
       const pdf = JSON.parse(json.pdf);
 
-      for (let page = 0; page < pdf.length; page++) {
-        for (const key in pdf[page]) {
-            const element = createElement(key, pdf[page][key].options, pdf[page][key].label);
+      for (let page of pdf) {
+        for (const key in page) {
+            const element = createElement(key, page[key].options, page[key].label);
             canvas.appendChild(element);
         }
       }
@@ -458,9 +471,9 @@ function createElement(type, options, label) {
     handler.classList.add("resize-handle");
 
     let clicked = false;
-    let startX, startY, startWidth;
+    let startX, startY, startWidth, startHeight;
 
-    addListener(handler, clicked, startX, startY, startWidth, box);
+    addListener(handler, clicked, startX, startY, startWidth, startHeight, box);
 
     element.appendChild(handler);
   } else if (type === "text") {
@@ -475,9 +488,9 @@ function createElement(type, options, label) {
     handler.classList.add("resize-handle");
 
     let clicked = false;
-    let startX, startY, startWidth;
+    let startX, startY, startWidth, startHeight;
 
-    addListener(handler, clicked, startX, startY, startWidth, text);
+    addListener(handler, clicked, startX, startY, startWidth, startHeight, text);
 
     element.appendChild(handler);
   } else if (type === "textField") {
@@ -492,9 +505,9 @@ function createElement(type, options, label) {
     handler.classList.add("resize-handle");
 
     let clicked = false;
-    let startX, startY, startWidth;
+    let startX, startY, startWidth, startHeight;
 
-    addListener(handler, clicked, startX, startY, startWidth, textField);
+    addListener(handler, clicked, startX, startY, startWidth, startHeight, textField);
 
     element.appendChild(handler);
   }

@@ -2,9 +2,10 @@ import { Database } from 'sqlite3';
 import fs from 'fs';
 
 class DataBase {
+  static shared = new DataBase();
   private db: Database;
  
-  constructor() {
+  private constructor() {
     const dir = __dirname + '/../tmp';
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
@@ -45,7 +46,7 @@ class DataBase {
   }
 
   insert(table: string, propetries: string, values: string, callback?: (err: Error | null) => void) {
-    if (validateValues(values)) {
+    if (this.validateValues(values)) {
       this.db.run(`INSERT INTO ${table} (${propetries}) VALUES (${values})`, callback);
     } else {
       callback?.(new Error('Invalid values'));
@@ -102,7 +103,7 @@ class DataBase {
     });
   }
 
-  private validateValues(values: string[]): boolean {
+  private validateValues(values: string): boolean {
     return true;
   }
 }

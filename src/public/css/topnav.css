@@ -10,6 +10,16 @@ body {
   position: relative;
 }
 
+.logo-text {
+  position: absolute;
+  left: 60px;
+  top: -5px;
+}
+
+.logo-text:hover {
+  cursor: pointer;
+}
+
 .topnav #myLinks {
   display: none;
   position: absolute;
@@ -17,23 +27,28 @@ body {
   right: 0;
   border-radius: 15px;
   background-color: rgba(255, 0, 0, 0.08);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 .topnav img {
-  height: 24px;
-  margin: -10px;
-  margin-left: 4px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-  border-radius: 3px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  height: 37.5px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
   background-color: white;
-  padding: 4px;
+  padding: 5px;
 }
 
 .active {
   background-color: #e92b2bd2;
   color: white;
   border-radius: 15px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  height: 47.5px;
 }
 
 .topnav a {

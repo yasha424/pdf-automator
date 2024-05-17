@@ -1,11 +1,11 @@
-import express, { Express, Request, Response } from "express";
-import path from 'path';
+import express, { Request, Response } from "express";
 import { PDF } from './pdf';
+import { DataBase } from './db';
 
 const router = express.Router();
 let dotenv = require('dotenv').config();
 
-router.post('/', async (req: Request, res: Response) => {
+router.post('/pdf', async (req: Request, res: Response) => {
   const pdfBytes = await new PDF().makePdf(req.body.pdf);
   res.end(new Buffer(pdfBytes));
 });
@@ -17,8 +17,8 @@ router.post('/send', async (req: Request, res: Response) => {
 
   if (emails == null || !Array.isArray(emails) || !emails.length) { return; };
 
-  for (let i = 0; i < emails.length; i++) {
-    let result = await sendMail("PDF-Editor", emails[i], "PDF-Editor", "This is a pdf.", pdfBytes);
+  for (let email of emails) {
+    let result = await sendMail("PDF-Editor", email, "PDF-Editor", "This is a pdf.", pdfBytes);
     
     if (result.status === 404) {
       return res.json({ status: 404 });
@@ -26,10 +26,6 @@ router.post('/send', async (req: Request, res: Response) => {
   }
   res.json({status: 200});
 });
-
-router.get('/pdf', (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, './../../output.pdf'));
-})
 
 async function sendMail(name: string, email: string, subject: string, message: string, pdfBytes: Uint8Array) {
   const myHeaders = new Headers();
@@ -66,5 +62,138 @@ async function sendMail(name: string, email: string, subject: string, message: s
   }
   return { status: 200 };
 }
+
+router.post('/save-pdf', async (req: Request, res: Response) => {
+  const email = req.body.email;
+  const pdf = req.body.pdf;
+  const filename = req.body.filename;
+
+
+  if (filename == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+  if (email == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+  if (Array.isArray(pdf) && !pdf.length) {
+    res.json({ status: 404 });
+    return;
+  }
+
+  const pdfString = JSON.stringify(pdf).replace(/"/g, "&");
+  console.log(pdfString);
+
+  DataBase.shared.insert('pdfTemplates', 'userEmail, pdfJson, filename', `"${email}", "${pdfString}", "${filename}"`, (err) => {
+    if (err == null) {
+      return res.json({ status: 200 })
+    }
+    return res.json({ status: 404 })
+  });
+});
+
+router.get('/pdf-templates/:email', (req: Request, res: Response) => {
+  if (req.params.email == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+
+  DataBase.shared.getAll('pdfTemplates', ['*'], ['userEmail'], [req.params.email], (err, rows) => {
+    let pdfs = [];
+    for (let row of rows) {
+      pdfs.push({ pdf: JSON.parse(row.pdfJson.replace(/&/g, "\"")), id: row.id, filename: row.filename });
+    }
+    return res.json(pdfs);
+  });
+});
+
+router.get('/pdf-template/:id', (req: Request, res: Response) => {
+  if (req.params.id == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+
+  DataBase.shared.get('pdfTemplates', ['*'], ['id'], [req.params.id], (err, row: any) => {
+    if (err || row == undefined) { return; };
+    if (row.pdfJson) {
+      res.json({ pdf: row.pdfJson.replace(/&/g, "\""), id: row.id, filename: row.filename });
+    } else {
+      return res.json({ status: 404 });
+    }
+  })
+});
+
+router.delete('/pdf-templates/:email/:id', (req: Request, res: Response) => {
+  if (req.params.email == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+  if (req.params.id == undefined) {
+    res.json({ status: 404 });
+    return;
+  }
+
+  DataBase.shared.delete('pdfTemplates', ['id'], [req.params.id], (err) => {
+    if (err == null) {
+      res.json({ status: 200 });
+    }
+  });
+});
+
+router.get('/default-pdfs', (req: Request, res: Response) => {
+  DataBase.shared.getAll('deafultPdfs', ['*'], undefined, undefined, (err, rows) => {
+    if (err != null) { return; }
+    let pdfs = [];
+    for (let row of rows) {
+      pdfs.push({ pdf: JSON.parse(row.pdfJson.replace(/&/g, "\"")), id: row.id, filename: row.filename });
+    }
+    return res.json(pdfs);
+  });
+})
+
+router.get('/default-pdf/:id', (req: Request, res: Response) => {
+  let id = req.params.id;
+  
+  if (id == null) {
+    return res.json({ status: 404 });
+  }
+
+  DataBase.shared.getAll('deafultPdfs', ['*'], ['id'], [id], (err, row: any) => {
+    if (err != null || row == undefined) { console.log(123); return; }
+    
+    if (row[0].pdfJson) {
+      return res.json({ pdf: row[0].pdfJson.replace(/&/g, "\""), id: row.id, filename: row.filename });
+    } else {
+      return res.json({ status: 404 });
+    }
+  })
+})
+
+router.post('/save-default-pdf', async (req: Request, res: Response) => {
+  const email = req.body.email;
+  const pdf = req.body.pdf;
+  const filename = req.body.filename;
+
+  if (filename == undefined) {
+    res.json({ status: 401 });
+    return;
+  }
+  if (Array.isArray(pdf) && !pdf.length) {
+    res.json({ status: 404 });
+    return;
+  }
+
+  const pdfString = JSON.stringify(pdf).replace(/"/g, "&");
+  console.log(pdfString);
+
+  DataBase.shared.insert('deafultPdfs', 'pdfJson, filename', `"${pdfString}", "${filename}"`, (err) => {
+    if (err == null) {
+      return res.json({ status: 200 })
+    }
+    return res.json({ status: 404 })
+  });
+});
+
 
 export { router as pdfRouter };

@@ -1,16 +1,14 @@
-import { degrees, PDFDocument as PDFLib, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument as PDFLib, rgb } from 'pdf-lib';
 
 class PDF {
   async makePdf(pdf: any) {
     let pdfDoc = await PDFLib.create()
-    const helveticaFont = await pdfDoc.embedFont(StandardFonts.TimesRoman)
-    const charSet = helveticaFont.getCharacterSet();
     
     const page = pdfDoc.addPage();
     const form = pdfDoc.getForm();
   
     for (let i = 0; i < pdf.length; i++) {
-      const { width, height } = page.getSize();
+      const { height } = page.getSize();
   
       if (pdf[i].text !== undefined) {
         const text = pdf[i].text;
@@ -18,7 +16,7 @@ class PDF {
         options.y = height - options.y
         page.drawText(text.label, options)
       } else if (pdf[i].table !== undefined) {
-  
+        console.log(pdf[i].table);
       } else if (pdf[i].textField !== undefined) {
         const textField = pdf[i].textField;
         textField.options.y = height - textField.options.y - textField.options.height;

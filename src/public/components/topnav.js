@@ -1,14 +1,10 @@
 class Topnav extends HTMLElement {
-  constructor() {
-    super();
-  }
-
   connectedCallback() {
     this.innerHTML = `
   <link rel="stylesheet" href="/css/topnav.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <div class="topnav">
-    <div class="active" id="home-link"><a id="logo"><img src="/logo.png"></a></div>
+    <div class="active" id="home-link"><a id="logo"><img src="/images/logo.png"></a><h3 class="logo-text" id="logoText">PDF-Editor</h3></div>
     <div id="myLinks">
       <div href="#profile">
         <a href="#profile" id="email"></a>
@@ -39,6 +35,11 @@ function setParams() {
 
   const logo = document.getElementById("logo");
   logo.href = `/main?email=${email}&firstName=${firstName}&lastName=${lastName}`;
+
+  const logoText = document.getElementById("logoText");
+  logoText.onclick = (() => {
+    window.location = `/main?email=${email}&firstName=${firstName}&lastName=${lastName}`;
+  });
 }
 
 function toggleTopnav() {

@@ -17,19 +17,19 @@
   <div id="editor">
     <div id="toolbox">
       <div class="tool" draggable="true" data-element="text" title="Text">
-        <img src="/textformat.png" alt="" data-element="text">
+        <img src="/images/textformat.png" alt="" data-element="text">
       </div>
       <div class="tool" draggable="true" data-element="text-field" title="Text Field">
-        <img src="/character.cursor.ibeam.png" alt="" data-element="text-field">
+        <img src="/images/character.cursor.ibeam.png" alt="" data-element="text-field">
       </div>
       <div class="tool" draggable="true" data-element="box" title="Box">
-        <img src="/square.png" alt="" data-element="box">
+        <img src="/images/square.png" alt="" data-element="box">
       </div>
       <div class="tool" draggable="true" data-element="image" title="Text">
-        <img src="/photo.artframe.png" alt="" data-element="image">
+        <img src="/images/photo.artframe.png" alt="" data-element="image">
       </div>
       <div class="tool" draggable="true" data-element="table" title="Table">
-        <img src="/tablecells.png" alt="" data-element="table">
+        <img src="/images/tablecells.png" alt="" data-element="table">
       </div>
     </div>
     <div id="canvas" ondragover="allowDrop(event)"></div>
@@ -40,6 +40,7 @@
 
     <div class="buttons">
       <button class="save-button" onclick="saveTemplate()" title="Save Template">Save</button>
+      <button class="save-default-button" onclick="saveDefaultTemplate()" title="Save Template as default">Save as default</button>
       <button class="download-button" onclick="downloadPdf()" title="Download PDF">Download</button>
       <share-button></share-button>
     </div>
