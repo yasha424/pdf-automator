@@ -16,6 +16,7 @@ class Topnav extends HTMLElement {
       </div>
       <div><a href="#contact">Contact</a></div>
       <div><a href="#about">About</a></div>
+      <div><a href="/login">Logout</a></div>
     </div>
     <a class="icon" onclick="toggleTopnav()">
       <i class="fa fa-bars"></i>
@@ -38,7 +39,6 @@ function setParams() {
 
   const logo = document.getElementById("logo");
   logo.href = `/main?email=${email}&firstName=${firstName}&lastName=${lastName}`;
-  // logo.href = `/html/main.html?email=${email}&firstName=${firstName}&lastName=${lastName}`;
 }
 
 function toggleTopnav() {

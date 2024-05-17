@@ -14,12 +14,16 @@
 <body>
   <topnav-component></topnav-component>
   <div id="template-div">
-    <h2>Templates</h2>
+    <h2>Saved Templates</h2>
     <a href="/editor" id="editor-link" class="editor-link" title="Add new template">
-      <img src="/plus.png" alt="" width="24px" height="24px" >
+      <img src="/plus.png" alt="" width="24px" height="24px">
     </a>
   </div>
   <div id="template-list"></div>
+  <div id="template-div">
+    <h2>Default Templates</h2>
+  </div>
+  <div id="default-template-list"></div>
 </body>
 <script>
   const queryString = window.location.search;
@@ -28,7 +32,7 @@
   const email = urlParams.get('email');
   const firstName = urlParams.get('firstName');
   const lastName = urlParams.get('lastName');
-  
+
   document.getElementById("editor-link").href += `?email=${email}&firstName=${firstName}&lastName=${lastName}`;
 
   fetch(`/api/pdf-templates/${email}`, {
@@ -37,70 +41,95 @@
       "Content-type": "application/json; charset=UTF-8"
     }
   })
-  .then(response => response.json())
-  .then(json => {
-    const pdfList = document.getElementById("template-list");
+    .then(response => response.json())
+    .then(json => {
+      const pdfList = document.getElementById("template-list");
 
-    for (let i = 0; i < json.length; i++) {
-      const pdfItem = document.createElement("div");
-      pdfItem.classList.add("pdf-item");
-      
-      const docImage = document.createElement("img");
-      docImage.src = "/doc.png";
-      docImage.classList.add("doc-image");
-      pdfItem.appendChild(docImage);
+      for (let i = 0; i < json.length; i++) {
+        insertPdfInto(pdfList, json[i], true);
+      }
+    });
 
-      const editButton = document.createElement("button");
-      editButton.innerText = "Edit";
-      editButton.classList.add("edit-button");
-      // editButton.href = `/editor?email=${email}&firstName=${firstName}&lastName=${lastName}&id=${json[i].id}`;
-      editButton.onclick = (() => {
-        window.location = `/editor?email=${email}&firstName=${firstName}&lastName=${lastName}&id=${json[i].id}`;
-      });
-      // pdfItem.appendChild(editButton);
+  fetch(`/api/default-pdfs`, {
+    method: "GET",
+    headers: {
+      "Content-type": "application/json; charset=UTF-8"
+    }
+  })
+    .then(response => response.json())
+    .then(json => {
+      const pdfList = document.getElementById("default-template-list");
 
+      for (let i = 0; i < json.length; i++) {
+        insertPdfInto(pdfList, json[i], false);
+      }
+    });
+
+  window.onload = (() => {
+    setParams();
+  });
+
+  function insertPdfInto(element, pdf, deletable) {
+    const pdfItem = document.createElement("div");
+    pdfItem.classList.add("pdf-item");
+
+    const docImage = document.createElement("img");
+    docImage.src = "/doc.png";
+    docImage.classList.add("doc-image");
+    pdfItem.appendChild(docImage);
+
+    const info = document.createElement("div");
+    info.classList.add("info");
+
+    const filename = document.createElement("div");
+    filename.classList.add("filename");
+    filename.innerText = pdf.filename;
+
+    info.appendChild(filename);
+
+    const editButton = document.createElement("button");
+    editButton.innerText = "Edit";
+    editButton.classList.add("edit-button");
+
+    editButton.onclick = (() => {
+      if (deletable) {
+        window.location = `/editor?email=${email}&firstName=${firstName}&lastName=${lastName}&id=${pdf.id}`;
+      } else {
+        window.location = `/editor?email=${email}&firstName=${firstName}&lastName=${lastName}&defaultId=${pdf.id}`;
+      }
+    });
+    const buttons = document.createElement("div");
+    buttons.classList.add("buttons-div");
+    buttons.appendChild(editButton);
+
+    if (deletable) {
       const deleteButton = document.createElement("button");
       deleteButton.innerText = "Delete";
       deleteButton.classList.add("delete-button");
 
       deleteButton.onclick = (() => {
-        fetch(`/api/pdf-templates/${email}/${json[i].id}`, {
+        fetch(`/api/pdf-templates/${email}/${pdf.id}`, {
           method: "DELETE",
           headers: {
-           "Content-type": "application/json; charset=UTF-8"
+            "Content-type": "application/json; charset=UTF-8"
           }
         })
-        .then(response => response.json())
-        .then(json => {
-          if (json.status === 200) {
-            pdfList.removeChild(pdfItem);
-          }
-        });
+          .then(response => response.json())
+          .then(json => {
+            if (json.status === 200) {
+              element.removeChild(pdfItem);
+            }
+          });
       });
 
-      const filename = document.createElement("div");
-      filename.classList.add("filename");
-      filename.innerText = json[i].filename;
-      
-      const buttons = document.createElement("div");
-      buttons.classList.add("buttons-div");
-      buttons.appendChild(editButton);
       buttons.appendChild(deleteButton);
-
-      const info = document.createElement("div");
-      info.classList.add("info");
-      info.appendChild(filename);
-      info.appendChild(buttons);
-
-      pdfItem.appendChild(info);
-
-      pdfList.appendChild(pdfItem)
     }
-  });
-  
-  window.onload = (() => {
-    setParams();
-  });
+    info.appendChild(buttons);
+
+    pdfItem.appendChild(info);
+
+    element.appendChild(pdfItem)
+  }
 </script>
 
 </html>

@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // draggedElement.style.left = x - 310 + "px";
       // draggedElement.style.top = y - 85 + "px";
       draggedElement.style.left = x - 450 + "px";
-      draggedElement.style.top = y - 85 + "px";
+      draggedElement.style.top = y - 90 + "px";
     }
 });
 
@@ -386,9 +386,30 @@ window.onload = (() => {
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
   const id = urlParams.get('id');
+  const defaultId = urlParams.get('defaultId');
 
   if (id) {
     fetch("/api/pdf-template/" + id, {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      }
+    })
+    .then(response => response.json())
+    .then(json => {
+      const pdf = JSON.parse(json.pdf);
+
+      for (let page = 0; page < pdf.length; page++) {
+        for (const key in pdf[page]) {
+            const element = createElement(key, pdf[page][key].options, pdf[page][key].label);
+            canvas.appendChild(element);
+        }
+      }
+
+      document.getElementById("filename").value = json.filename;
+    });
+  } else if (defaultId) {
+    fetch("/api/default-pdf/" + defaultId, {
       method: "GET",
       headers: {
         "Content-type": "application/json; charset=UTF-8"

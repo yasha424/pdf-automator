@@ -5,7 +5,6 @@ body {
 #editor {
   display: flex;
   flex-direction: row;
-  height: 29.7cm;
 }
 
 #toolbox {
@@ -24,6 +23,7 @@ body {
   background-color: #fff;
   border: 2px solid #ccc;
   width: 21cm;
+  height: 29.7cm;
   margin-left: 200px;
   margin-right: 200px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -172,9 +172,16 @@ input {
   transition: all 0.3s ease-out;
   transform: translate(120%, 0);
   padding: 8px;
-  /* font-family: Arial, Helvetica, sans-serif; */
 }
 
 .active {
   transform: translate(0, 0) !important;
+}
+
+.element {
+  cursor: move;
+}
+
+.element div {
+  cursor: default;
 }

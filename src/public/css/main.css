@@ -1,4 +1,4 @@
-#template-list {
+#template-list, #default-template-list {
   width: calc(100% - 4px);
   border-radius: 15px;
   margin-top: 12px;

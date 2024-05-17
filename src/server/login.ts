@@ -1,48 +1,8 @@
 import express, { Request, Response } from "express";
-import { Database } from 'sqlite3';
-import path from 'path';
-import fs from 'fs';
-
-(() => {
-  var dir = __dirname + '/../tmp';
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir);
-  }
-})();
-
-const db = new Database(__dirname + '/../tmp/db.sqlite');
+import { DataBase } from './db';
 
 const router = express.Router();
-
-function createUserTable() {
-  db.exec(`CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    firstName VARCHAR(200) NOT NULL,
-    lastName VARCHAR(200) NOT NULL,
-    email VARCHAR(200) NOT NULL,
-    password VARCHAR(200) NOT NULL
-  )`);
-}
-
-function createPdfTemplateTable() {
-  db.exec(`CREATE TABLE IF NOT EXISTS pdfTemplates (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    userEmail VARCHAR(200) NOT NULL,
-    filename VARCHAR(200) NOT NULL,
-    pdfJson TEXT NOT NULL
-  )`);
-}
-
-(() => {
-  createPdfTemplateTable();
-  createUserTable();
-  // db.exec('DELETE FROM pdfTemplates');
-  // db.all('SELECT * FROM pdfTemplates', (err, rows: any) => {
-    // for (let i = 0; i < rows.length; i++) {
-      // console.log(rows[i]);
-    // }
-  // });
-})();
+const db = new DataBase();
 
 router.get('/register', (req: Request, res: Response) => {
   const query = req.query;
@@ -50,28 +10,23 @@ router.get('/register', (req: Request, res: Response) => {
   
 
   if (query.email !== undefined && query.password != undefined && query.password == query.repassword) {
-    createUserTable();
-    db.run(`INSERT INTO users (firstName, lastName, email, password) VALUES (
-      "${query.first}", "${query.last}", "${query.email}", "${query.password}"
-    )`);
-
-    res.redirect('/main' + `?email=${query.email}&lastName=${query.last}&firstName=${query.first}`);
-  } else {
-    res.json({ status: 401 });
+    db.insert('users', 'firstName, lastName, email, password', `"${query.first}", "${query.last}", "${query.email}", "${query.password}"`, (err) => {
+      if (err == null) {
+        return res.redirect('/main' + `?email=${query.email}&lastName=${query.last}&firstName=${query.first}`);
+      }
+      return res.json({ status: 401 });
+    });
   }
 });
 
 router.get('/login', async (req: Request, res: Response) => {
   const query = req.query;
 
-  db.get('SELECT firstName, lastName, email FROM users WHERE email = ? AND password = ?', [query.email, query.password], (err, user: any) => {
-    if (user !== undefined) {
-      res.redirect(`/html/main.html?email=${user.email}&firstName=${user.firstName}&lastName=${user.lastName}`);
-      // res.sendFile(path.join(__dirname, '../public/html/main.html'));
-      // res.json({ status: 200 });
-    } else {
-      res.json({ status: 401 });
-    }
+  let user = db.get('users', ['firstName', 'lastName', 'email'], ['email', 'password'], [query.email, query.password], (err, user) => {
+    if (user != null) {
+      return res.redirect(`/html/main.html?email=${user.email}&firstName=${user.firstName}&lastName=${user.lastName}`);
+    } 
+    return res.json({ status: 401 });
   });
 });
 
@@ -95,11 +50,14 @@ router.post('/save-pdf', async (req: Request, res: Response) => {
   }
 
   const pdfString = JSON.stringify(pdf).replace(/\"/g, "&");
-  db.run(`INSERT INTO pdfTemplates (userEmail, pdfJson, filename) VALUES (
-    "${email}", "${pdfString}", "${filename}"
-  )`);
+  console.log(pdfString);
 
-  res.json({status: 200})
+  db.insert('pdfTemplates', 'userEmail, pdfJson, filename', `"${email}", "${pdfString}", "${filename}"`, (err) => {
+    if (err == null) {
+      return res.json({ status: 200 })
+    }
+    return res.json({ status: 404 })
+  });
 });
 
 router.get('/pdf-templates/:email', (req: Request, res: Response) => {
@@ -107,13 +65,14 @@ router.get('/pdf-templates/:email', (req: Request, res: Response) => {
     res.json({ status: 401 });
     return;
   }
-  db.all('SELECT * FROM pdfTemplates WHERE userEmail = ?', [req.params.email], (err, rows: any) => {
+
+  db.getAll('pdfTemplates', ['*'], ['userEmail'], [req.params.email], (err, rows) => {
     let pdfs = [];
     for (let i = 0; i < rows.length; i++) {
       pdfs.push({ pdf: JSON.parse(rows[i].pdfJson.replace(/&/g, "\"")), id: rows[i].id, filename: rows[i].filename });
     }
-    res.json(pdfs);
-  })
+    return res.json(pdfs);
+  });
 });
 
 router.get('/pdf-template/:id', (req: Request, res: Response) => {
@@ -121,7 +80,9 @@ router.get('/pdf-template/:id', (req: Request, res: Response) => {
     res.json({ status: 401 });
     return;
   }
-  db.get('SELECT * FROM pdfTemplates WHERE id = ?', [req.params.id], (err, row: any) => {
+
+  db.get('pdfTemplates', ['*'], ['id'], [req.params.id], (err, row: any) => {
+    if (err || row == undefined) { return; };
     if (row.pdfJson) {
       res.json({ pdf: row.pdfJson.replace(/&/g, "\""), id: row.id, filename: row.filename });
     } else {
@@ -140,13 +101,41 @@ router.delete('/pdf-templates/:email/:id', (req: Request, res: Response) => {
     return;
   }
 
-  db.run('DELETE FROM pdfTemplates WHERE id = ?', req.params.id, (err: any) => {
-    console.log(err);
-    
+  db.delete('pdfTemplates', ['id'], [req.params.id], (err) => {
     if (err == null) {
       res.json({ status: 200 });
     }
   });
 });
+
+router.get('/default-pdfs', (req: Request, res: Response) => {
+  db.getAll('deafultPdfs', ['*'], undefined, undefined, (err, rows) => {
+    if (err != null) { return; }
+    let pdfs = [];
+    for (let i = 0; i < rows.length; i++) {
+      pdfs.push({ pdf: JSON.parse(rows[i].pdfJson.replace(/&/g, "\"")), id: rows[i].id, filename: rows[i].filename });
+    }
+    return res.json(pdfs);
+  });
+})
+
+router.get('/default-pdf/:id', (req: Request, res: Response) => {
+  let id = req.params.id;
+  
+  if (id == null) {
+    return res.json({ status: 404 });
+  }
+
+  db.getAll('deafultPdfs', ['*'], ['id'], [id], (err, row: any) => {
+    if (err != null || row == undefined) { console.log(123); return; }
+    
+    if (row[0].pdfJson) {
+      return res.json({ pdf: row[0].pdfJson.replace(/&/g, "\""), id: row.id, filename: row.filename });
+    } else {
+      return res.json({ status: 404 });
+    }
+  })
+})
+
 
 export { router as loginRouter };

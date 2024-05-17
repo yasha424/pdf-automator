@@ -1,13 +1,11 @@
-import fs from 'fs';
 import express, { Express, Request, Response } from "express";
-import { pdfRouter } from './server/pdf';
+import { pdfRouter } from './server/pdfRouter';
 import { loginRouter } from './server/login';
-import path from 'path';
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
 
-app.use(express.json());
+app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(__dirname + "/public"));
 
