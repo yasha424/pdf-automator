@@ -2,7 +2,7 @@ import { Database } from 'sqlite3';
 import fs from 'fs';
 
 class DataBase {
-  static shared = new DataBase();
+  static readonly shared = new DataBase();
   private db: Database;
  
   private constructor() {
@@ -15,6 +15,10 @@ class DataBase {
     this.createPdfTemplateTable();
     this.createUserTable();
     this.createDefaultPdfsTable();
+
+    // this.db.all('Select * from users', (err, rows) => {
+    //   console.log(rows);
+    // })
   }
 
   private createUserTable() {

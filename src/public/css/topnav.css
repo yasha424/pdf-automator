@@ -36,7 +36,6 @@ body {
   left: 0;
   top: 0;
   border-radius: 15px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   height: 37.5px;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
   background-color: white;
@@ -61,6 +60,10 @@ body {
 
 #myLinks a {
   color: black;
+}
+
+#myLinks a:hover {
+  cursor: pointer;
 }
 
 .topnav a.icon {

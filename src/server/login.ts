@@ -2,7 +2,6 @@ import express, { Request, Response } from "express";
 import { DataBase } from './db';
 
 const router = express.Router();
-// const db = new DataBase();
 
 router.get('/register', (req: Request, res: Response) => {
   const query = req.query;
@@ -24,7 +23,7 @@ router.get('/login', async (req: Request, res: Response) => {
 
   DataBase.shared.get('users', ['firstName', 'lastName', 'email'], ['email', 'password'], [query.email, query.password], (err, user) => {
     if (user != null) {
-      return res.redirect(`/html/main.html?email=${user.email}&firstName=${user.firstName}&lastName=${user.lastName}`);
+      return res.redirect(`/main?email=${user.email}&firstName=${user.firstName}&lastName=${user.lastName}`);
     } 
     return res.json({ status: 401 });
   });

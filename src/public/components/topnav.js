@@ -4,7 +4,7 @@ class Topnav extends HTMLElement {
   <link rel="stylesheet" href="/css/topnav.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <div class="topnav">
-    <div class="active" id="home-link"><a id="logo"><img src="/images/logo.png"></a><h3 class="logo-text" id="logoText">PDF-Editor</h3></div>
+    <div class="active" id="home-link"><a id="logo" href="/main"><img src="/images/logo.png"></a><h3 class="logo-text" id="logoText">PDF-Editor</h3></div>
     <div id="myLinks">
       <div href="#profile">
         <a href="#profile" id="email"></a>
@@ -12,7 +12,7 @@ class Topnav extends HTMLElement {
       </div>
       <div><a href="#contact">Contact</a></div>
       <div><a href="#about">About</a></div>
-      <div><a href="/login">Logout</a></div>
+      <div><a onclick="logout()">Logout</a></div>
     </div>
     <a class="icon" onclick="toggleTopnav()">
       <i class="fa fa-bars"></i>
@@ -23,23 +23,24 @@ class Topnav extends HTMLElement {
 }
 
 function setParams() {
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
+  const email = localStorage.getItem('email');
+  const firstName = localStorage.getItem('firstName');
+  const lastName = localStorage.getItem('lastName');
 
-  const email = urlParams.get('email');
-  const firstName = urlParams.get('firstName');
-  const lastName = urlParams.get('lastName');
+  console.log(email);
 
   document.getElementById('email').innerText = email;
   document.getElementById('name').innerText = firstName + " " + lastName;
 
-  const logo = document.getElementById("logo");
-  logo.href = `/main?email=${email}&firstName=${firstName}&lastName=${lastName}`;
-
   const logoText = document.getElementById("logoText");
   logoText.onclick = (() => {
-    window.location = `/main?email=${email}&firstName=${firstName}&lastName=${lastName}`;
+    window.location = '/main';
   });
+}
+
+function logout() {
+  localStorage.clear();
+  window.location = '/login';
 }
 
 function toggleTopnav() {

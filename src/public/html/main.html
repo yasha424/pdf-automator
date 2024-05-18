@@ -29,12 +29,20 @@
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
 
-  const email = urlParams.get('email');
-  const firstName = urlParams.get('firstName');
-  const lastName = urlParams.get('lastName');
+  let email = urlParams.get('email');
+  let firstName = urlParams.get('firstName');
+  let lastName = urlParams.get('lastName');
 
-  document.getElementById("editor-link").href += `?email=${email}&firstName=${firstName}&lastName=${lastName}`;
-
+  if (email != null && firstName != null && lastName != null) {
+    localStorage.setItem('email', email);
+    localStorage.setItem('firstName', firstName);
+    localStorage.setItem('lastName', lastName);
+  } else {
+    email = localStorage.getItem('email');
+    firstName = localStorage.getItem('firstName');
+    lastName = localStorage.getItem('lastName');
+  }
+  
   fetch(`/api/pdf-templates/${email}`, {
     method: "GET",
     headers: {
@@ -93,9 +101,9 @@
 
     editButton.onclick = (() => {
       if (deletable) {
-        window.location = `/editor?email=${email}&firstName=${firstName}&lastName=${lastName}&id=${pdf.id}`;
+        window.location = `/editor?id=${pdf.id}`;
       } else {
-        window.location = `/editor?email=${email}&firstName=${firstName}&lastName=${lastName}&defaultId=${pdf.id}`;
+        window.location = `/editor?defaultId=${pdf.id}`;
       }
     });
     const buttons = document.createElement("div");

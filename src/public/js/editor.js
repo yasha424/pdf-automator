@@ -60,9 +60,7 @@ function getPdfElements() {
 function saveTemplate() {
   const pdf = getPdfElements();
   
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  const email = urlParams.get('email');
+  const email = localStorage.getItem('email');
   const filename = document.getElementById("filename").value;
 
   fetch("/api/save-pdf", {
@@ -82,10 +80,6 @@ function saveTemplate() {
 
 function saveDefaultTemplate() {
   const pdf = getPdfElements();
-  
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  const email = urlParams.get('email');
   const filename = document.getElementById("filename").value;
 
   fetch("/api/save-default-pdf", {

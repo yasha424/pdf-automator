@@ -171,7 +171,6 @@ router.get('/default-pdf/:id', (req: Request, res: Response) => {
 })
 
 router.post('/save-default-pdf', async (req: Request, res: Response) => {
-  const email = req.body.email;
   const pdf = req.body.pdf;
   const filename = req.body.filename;
 
