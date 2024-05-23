@@ -11,16 +11,16 @@ class ShareButton extends HTMLElement {
   }
 }
 
-function sendPdf() {
+async function sendPdf() {
   const emails = document.getElementById('emails').value.split(',');
+  const pdf = await getPdfElements();
 
-  const pdf = getPdfElements();
   if (Array.isArray(pdf) && !pdf.length) {
     toggleAlert("Error sending message. PDF file must contain at least one element.", "red");
     return; 
   }  
   
-  fetch('/pdf/send', {
+  fetch('/api/send', {
     method: 'POST',
     headers: {
       "Content-type": "application/json; charset=UTF-8"

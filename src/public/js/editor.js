@@ -1,123 +1,15 @@
-function getPdfElements() {
-  const elements = document.getElementsByClassName("element");
-  let pdf = [];
-  for (let item of elements) {
-    let element = {};
-    for (const children of item.children) {
-      if (children.classList.contains("text")) {
-        element = {
-          text: {
-            label: children.innerText,
-            options: {
-              x: (parseInt(item.style.left) / 1.34),
-              y: (parseInt(item.style.top) / 1.34) + 28,
-              size: 12
-            }
-          }
-        };
-        break;
-      } else if (children.classList.contains("table")) {
-        console.log(children);
-      } else if (children.classList.contains("text-field")) {
-        const width = parseInt(children.style.width) / 1.34;
-        const height = parseInt(children.style.height) / 1.34;
-
-        element = {
-          textField: {
-            label: children.innerText,
-            options: {
-              x: parseInt(item.style.left) / 1.34,
-              y: parseInt(item.style.top) / 1.35 + 20,
-              width: width,
-              height: height
-            }
-          }
-        };
-        break;
-      } else if (children.classList.contains("box")) {
-        const width = parseInt(children.style.width) / 1.34;
-        const height = parseInt(children.style.height) / 1.34;
-        
-        element = {
-          box: {
-            options: {
-              x: parseInt(item.style.left) / 1.34,
-              y: parseInt(item.style.top) / 1.35 + 20,
-              width: width,
-              height: height
-            }
-          }
-        };
-        break;
-      }
-    }
-
-    pdf.push(element);
+function Uint8ToBase64(u8Arr) {
+  var CHUNK_SIZE = 0x8000;
+  var index = 0;
+  var length = u8Arr.length;
+  var result = '';
+  var slice;
+  while (index < length) {
+    slice = u8Arr.subarray(index, Math.min(index + CHUNK_SIZE, length));
+    result += String.fromCharCode.apply(null, slice);
+    index += CHUNK_SIZE;
   }
-  return pdf;
-}
-
-function saveTemplate() {
-  const pdf = getPdfElements();
-  
-  const email = localStorage.getItem('email');
-  const filename = document.getElementById("filename").value;
-
-  fetch("/api/save-pdf", {
-    method: "POST",
-    body: JSON.stringify({ pdf, email: email, filename: filename }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  })
-  .then(response => response.json())
-  .then(json => { 
-    if (json.status === 200) {
-      toggleAlert("PDF succesfully saved.", "green");
-    }
-  });
-}
-
-function saveDefaultTemplate() {
-  const pdf = getPdfElements();
-  const filename = document.getElementById("filename").value;
-
-  fetch("/api/save-default-pdf", {
-    method: "POST",
-    body: JSON.stringify({ pdf, filename: filename }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  })
-  .then(response => response.json())
-  .then(json => { 
-    if (json.status === 200) {
-      toggleAlert("PDF succesfully saved.", "green");
-    }
-  });
-}
-
-function downloadPdf() {
-  const pdf = getPdfElements();
-
-  fetch("api/pdf", {
-    method: "POST",
-    body: JSON.stringify({ pdf }),
-    headers: {
-      "Content-type": "application/json; charset=UTF-8"
-    }
-  })
-    .then(response => response.blob())
-    .then(blob => {
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "file.pdf";
-      document.body.appendChild(a);
-      a.click();
-      URL.revokeObjectURL(url);
-      a.remove();
-    })
+  return btoa(result);
 }
 
 function allowDrop(ev) {
@@ -128,6 +20,7 @@ const toolbox = document.getElementById("toolbox");
 const canvas = document.getElementById("canvas");
 const propertySidebar = document.getElementById("property-sidebar");
 let selectedTarget;
+let changed = false;
 
 document.addEventListener("DOMContentLoaded", function () {
   let draggedElement = null;
@@ -142,17 +35,11 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   canvas.addEventListener("drop", function (event) {
+    changed = true;
     event.preventDefault();
     const elementType = event.dataTransfer.getData("text/plain");
     const element = createElement(elementType, event);
     canvas.appendChild(element);
-  });
-
-  canvas.addEventListener("click", function (event) {
-    const target = event.target;
-    if (target.classList.contains("delete-button")) {
-      target.parentElement.remove();
-    }
   });
 
   canvas.addEventListener("mousedown", function (event) {
@@ -167,11 +54,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
   canvas.addEventListener("mousemove", function (event) {
     if (draggedElement) {
+      changed = true;
       let rect = canvas.getBoundingClientRect();
       const x = event.clientX - offsetX - rect.x;
       const y = event.clientY - offsetY - rect.y;
 
-      console.log(draggedElement.style.height);
       if (x > 0 - 20 && x < rect.width + draggedElement.style.width - 10) {
         draggedElement.style.left = x + "px";
       }
@@ -179,7 +66,7 @@ document.addEventListener("DOMContentLoaded", function () {
         draggedElement.style.top = y + "px";
       }
     }
-});
+  });
 
   canvas.addEventListener("mouseup", function () {
     draggedElement = null;
@@ -191,14 +78,17 @@ document.addEventListener("DOMContentLoaded", function () {
     element.style.position = "absolute";
 
     const rect = event.target.getBoundingClientRect();
-    element.style.top = `${event.pageY - rect.top}px`;
-    element.style.left = `${event.pageX - rect.left}px`;
+    element.style.top = `${event.pageY - rect.top - window.scrollY - 28}px`;
+    element.style.left = `${event.pageX - rect.left - window.scrollX - 20}px`;
 
     element.classList.add("element");
     element.classList.add(type);
 
     const deleteButton = document.createElement("button");
     deleteButton.classList.add("delete-button");
+    deleteButton.onclick = () => {
+      element.remove();
+    };
     element.appendChild(deleteButton);
 
     if (type === "table") {
@@ -220,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
         table.appendChild(row);
         rows.push(row);
       }
-      
+
       element.appendChild(table);
 
       const handler = document.createElement("div");
@@ -229,7 +119,7 @@ document.addEventListener("DOMContentLoaded", function () {
       let clicked = false;
       let startX, startY, startWidth, startHeight;
 
-      handler.addEventListener("mousedown", function(event) {
+      handler.addEventListener("mousedown", function (event) {
         clicked = true;
         startX = event.pageX;
         startWidth = table.offsetWidth;
@@ -237,13 +127,13 @@ document.addEventListener("DOMContentLoaded", function () {
         startHeight = table.offsetHeight;
       });
 
-      document.addEventListener("mousemove", function(event) {
+      document.addEventListener("mousemove", function (event) {
         if (!clicked) return;
         const newWidth = startWidth + (event.pageX - startX);
         const newHeight = startHeight + (event.pageY - startY);
         table.style.width = newWidth + "px";
         table.style.height = newHeight + "px";
-        
+
         for (let row of rows) {
           row.style.height = (newHeight / rows.length) + "px";
         }
@@ -253,13 +143,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       });
 
-      handler.addEventListener("mouseup", function(event) {
+      handler.addEventListener("mouseup", function (event) {
         clicked = false;
       });
 
-
       element.appendChild(handler);
-    } else if (type === "text-field") {
+    } else if (type === "textField") {
       const text = document.createElement("div");
       text.classList.add("text-field");
       text.classList.add("text-editable");
@@ -294,8 +183,89 @@ document.addEventListener("DOMContentLoaded", function () {
       addListener(handler, clicked, startX, startY, startWidth, startHeight, box);
 
       element.appendChild(handler);
+    } else if (type === "image") {
+      const imageContainer = document.createElement("div");
+      imageContainer.classList.add("image-element");
+      imageContainer.style.width = "100px";
+      imageContainer.style.height = "100px";
 
-    } else {
+      const image = document.createElement("img");
+      imageContainer.appendChild(image);
+
+      const imagePicker = document.createElement("input");
+      imagePicker.classList.add("file-picker");
+      imagePicker.type = "file";
+      imagePicker.accept = "image/png, image/jpeg";
+      imagePicker.addEventListener("change", () => {
+        if (imagePicker.files.length !== 0) {
+          image.src = URL.createObjectURL(imagePicker.files[0]);
+        }
+      });
+
+      imageContainer.appendChild(imagePicker);
+      element.appendChild(imageContainer);
+
+      const handler = document.createElement("div");
+      handler.classList.add("resize-handle");
+
+      let clicked = false;
+      let startX, startY, startWidth, startHeight;
+
+      addListener(handler, clicked, startX, startY, startWidth, startHeight, imageContainer);
+      element.appendChild(handler);
+    } else if (type === "checkBox") {
+      const checkBoxContainer = document.createElement("div");
+      checkBoxContainer.classList.add("check-box-container");
+      checkBoxContainer.style.width = "50px";
+      checkBoxContainer.style.height = "50px";
+
+      checkBoxContainer.onclick = () => {
+        if (checkBoxContainer.childElementCount === 0) {
+          const checkBox = document.createElement("img");
+          checkBox.classList.add("check-box");
+          checkBox.type = "checkbox";
+          checkBox.src = "/images/checkbox.checked.png";
+          checkBoxContainer.appendChild(checkBox);
+        } else {
+          checkBoxContainer.removeChild(checkBoxContainer.childNodes[0]);
+        }
+      }
+      element.appendChild(checkBoxContainer);
+
+      const handler = document.createElement("div");
+      handler.classList.add("resize-handle");
+
+      let clicked = false;
+      let startX, startY, startWidth, startHeight;
+      addListener(handler, clicked, startX, startY, startWidth, startHeight, checkBoxContainer);
+      element.appendChild(handler);
+    } else if (type === "radioButton") {
+      const radioButtonContainer = document.createElement("div");
+      radioButtonContainer.classList.add("radio-button-container");
+      radioButtonContainer.style.width = "50px";
+      radioButtonContainer.style.height = "50px";
+
+      radioButtonContainer.onclick = () => {
+        if (radioButtonContainer.childElementCount === 0) {
+          const checkBox = document.createElement("img");
+          checkBox.classList.add("check-box");
+          checkBox.type = "checkbox";
+          checkBox.src = "/images/dot.png";
+          radioButtonContainer.appendChild(checkBox);
+        } else {
+          radioButtonContainer.removeChild(radioButtonContainer.childNodes[0]);
+        }
+      }
+      element.appendChild(radioButtonContainer);
+
+      const handler = document.createElement("div");
+      handler.classList.add("resize-handle");
+
+      let clicked = false;
+      let startX, startY, startWidth, startHeight;
+      addListener(handler, clicked, startX, startY, startWidth, startHeight, radioButtonContainer);
+      element.appendChild(handler);
+    } else if (type === "text") {
       const text = document.createElement("div");
       text.classList.add("text");
       text.classList.add("text-editable");
@@ -319,17 +289,14 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 canvas.addEventListener("click", function (event) {
-  if (selectedTarget != undefined && selectedTarget != event.target 
-    && !selectedTarget.classList.contains("resize-handle") && !selectedTarget.contains("text-field")) {
-    selectedTarget.childNodes[1].style.border = "none";
+  if (selectedTarget && selectedTarget.childNodes[1]) {
+    hideElementProperties();
+    // selectedTarget.childNodes[1].style.border = "none";
   }
 
-  selectedTarget = event.target;
-  if (selectedTarget.classList.contains("element")) {
-    showElementProperties(selectedTarget);
-    selectedTarget.childNodes[1].style.border = "1px solid black";
-  } else {
-    console.log('hide element properties');
+  if (event.target.classList.contains("element")) {
+    selectedTarget = event.target;
+    showElementProperties(event.target);
   }
 });
 
@@ -339,9 +306,30 @@ function showElementProperties(element) {
   propertySidebar.innerHTML = "";
   for (const [key, value] of Object.entries(properties)) {
     const propertyDiv = document.createElement("div");
+    propertyDiv.id = "property-div";
     propertyDiv.innerHTML = `<strong>${key}:</strong> ${value}`;
     propertySidebar.appendChild(propertyDiv);
   }
+
+  if (["box", "textField"].includes(properties.Type)) {
+    const propertyDiv = document.createElement("div");
+    propertyDiv.id = "property-div";
+    propertyDiv.innerHTML = '<strong>Border:</strong> ';
+    const borderInput = document.createElement("input");
+    borderInput.type = "number";
+    borderInput.min = 0; borderInput.max = 8; 
+    console.log(element.childNodes[1].style.border);
+    borderInput.value = parseInt(element.childNodes[1].style.border) || 0;
+    borderInput.onchange = () => { 
+      element.childNodes[1].style.border = `${borderInput.value}px solid black`;
+    };
+    propertyDiv.appendChild(borderInput);
+    propertySidebar.appendChild(propertyDiv);
+  }
+}
+
+function hideElementProperties() {
+  propertySidebar.innerHTML = "";
 }
 
 function getElementProperties(element) {
@@ -365,7 +353,7 @@ function makeid(length) {
 }
 
 function addListener(handler, clicked, startX, startY, startWidth, startHeight, element) {
-  handler.addEventListener("mousedown", function(event) {
+  handler.addEventListener("mousedown", function (event) {
     clicked = true;
     startX = event.pageX;
     startWidth = element.offsetWidth;
@@ -373,138 +361,23 @@ function addListener(handler, clicked, startX, startY, startWidth, startHeight, 
     startHeight = element.offsetHeight;
   });
 
-  document.addEventListener("mousemove", function(event) {
-    if (!clicked) return;
+  document.addEventListener("mousemove", function (event) {
+    if (clicked !== true) return;
+    changed = true;
     const newWidth = startWidth + (event.pageX - startX);
     const newHeight = startHeight + (event.pageY - startY);
     element.style.width = newWidth + "px";
     element.style.height = newHeight + "px";
   });
 
-  handler.addEventListener("mouseup", function(event) {
+  document.addEventListener("mouseup", function (event) {
     clicked = false;
   });
 }
 
-window.onload = (() => {
-  const queryString = window.location.search;
-  const urlParams = new URLSearchParams(queryString);
-  const id = urlParams.get('id');
-  const defaultId = urlParams.get('defaultId');
-
-  if (id) {
-    fetch("/api/pdf-template/" + id, {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
-      }
-    })
-    .then(response => response.json())
-    .then(json => {
-      const pdf = JSON.parse(json.pdf);
-
-      for (let page of pdf) {
-        for (const key in page) {
-            const element = createElement(key, page[key].options, page[key].label);
-            canvas.appendChild(element);
-        }
-      }
-
-      document.getElementById("filename").value = json.filename;
-    });
-  } else if (defaultId) {
-    fetch("/api/default-pdf/" + defaultId, {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json; charset=UTF-8"
-      }
-    })
-    .then(response => response.json())
-    .then(json => {
-      const pdf = JSON.parse(json.pdf);
-
-      for (let page of pdf) {
-        for (const key in page) {
-            const element = createElement(key, page[key].options, page[key].label);
-            canvas.appendChild(element);
-        }
-      }
-
-      document.getElementById("filename").value = json.filename;
-    });
+window.onbeforeunload = () => {
+  if (changed) {
+    return "Leaving yhis page will dismiss all changes made in this file. Make sure you save your file.";
   }
-
-  setParams();
-});
-
-function createElement(type, options, label) {
-  const element = document.createElement("div");
-  element.style.userSelect = "none";
-  element.style.position = "absolute";
-
-  element.classList.add("element");
-  element.classList.add(type);
-
-  const deleteButton = document.createElement("button");
-  deleteButton.classList.add("delete-button");
-  element.appendChild(deleteButton);
-  
-  const rect = canvas.getBoundingClientRect();
-
-  element.style.top = `${(options.y + rect.top - 112) * 1.36}px`;
-  element.style.left = `${(options.x + rect.left - 456) * 1.34}px`;
-  
-  if (type === "box") {
-    const box = document.createElement("div");
-    box.classList.add("box");
-    box.style.width = options.width * 1.34 + "px";
-    box.style.height = options.height * 1.34 + "px";
-    element.appendChild(box);
-
-    const handler = document.createElement("div");
-    handler.classList.add("resize-handle");
-
-    let clicked = false;
-    let startX, startY, startWidth, startHeight;
-
-    addListener(handler, clicked, startX, startY, startWidth, startHeight, box);
-
-    element.appendChild(handler);
-  } else if (type === "text") {
-    const text = document.createElement("div");
-    text.classList.add("text");
-    text.style.width = options.width * 1.34 + "px";
-    text.style.height = options.height * 1.34 + "px";
-    text.innerText = label;
-    element.appendChild(text);
-
-    const handler = document.createElement("div");
-    handler.classList.add("resize-handle");
-
-    let clicked = false;
-    let startX, startY, startWidth, startHeight;
-
-    addListener(handler, clicked, startX, startY, startWidth, startHeight, text);
-
-    element.appendChild(handler);
-  } else if (type === "textField") {
-    const textField = document.createElement("div");
-    textField.classList.add("text-field");
-    textField.style.width = options.width * 1.34 + "px";
-    textField.style.height = options.height * 1.34 + "px";
-    textField.innerText = label;
-    element.appendChild(textField);
-
-    const handler = document.createElement("div");
-    handler.classList.add("resize-handle");
-
-    let clicked = false;
-    let startX, startY, startWidth, startHeight;
-
-    addListener(handler, clicked, startX, startY, startWidth, startHeight, textField);
-
-    element.appendChild(handler);
-  }
-
-  return element;
-}
+  return null;
+};

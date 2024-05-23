@@ -3,6 +3,7 @@ class Topnav extends HTMLElement {
     this.innerHTML = `
   <link rel="stylesheet" href="/css/topnav.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+  <div id="loadOverlay" style="background-color: #fff; position: absolute; top: 0px; left: 0px; width: 100%; height: 100%; z-index: 100;"></div>
   <div class="topnav">
     <div class="active" id="home-link"><a id="logo" href="/main"><img src="/images/logo.png"></a><h3 class="logo-text" id="logoText">PDF-Editor</h3></div>
     <div id="myLinks">
@@ -26,8 +27,6 @@ function setParams() {
   const email = localStorage.getItem('email');
   const firstName = localStorage.getItem('firstName');
   const lastName = localStorage.getItem('lastName');
-
-  console.log(email);
 
   document.getElementById('email').innerText = email;
   document.getElementById('name').innerText = firstName + " " + lastName;

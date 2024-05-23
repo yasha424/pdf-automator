@@ -6,8 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <link rel="stylesheet" href="/css/main.css">
-  <script src="https://unpkg.com/pdf-lib@1.4.0"></script>
-  <script src="https://unpkg.com/downloadjs@1.4.7"></script>
   <script src="/components/topnav.js" type="text/javascript" defer></script>
 </head>
 
@@ -32,15 +30,18 @@
   let email = urlParams.get('email');
   let firstName = urlParams.get('firstName');
   let lastName = urlParams.get('lastName');
+  let admin = urlParams.get('admin');
 
   if (email != null && firstName != null && lastName != null) {
     localStorage.setItem('email', email);
     localStorage.setItem('firstName', firstName);
     localStorage.setItem('lastName', lastName);
+    localStorage.setItem('admin', admin);
   } else {
     email = localStorage.getItem('email');
     firstName = localStorage.getItem('firstName');
     lastName = localStorage.getItem('lastName');
+    admin = localStorage.getItem('admin');
   }
   
   fetch(`/api/pdf-templates/${email}`, {
@@ -54,7 +55,7 @@
       const pdfList = document.getElementById("template-list");
 
       for (let item of json) {
-        insertPdfInto(pdfList, item, true);
+        insertPdfInto(pdfList, item, true, false);
       }
     });
 
@@ -69,7 +70,7 @@
       const pdfList = document.getElementById("default-template-list");
 
       for (let item of json) {
-        insertPdfInto(pdfList, item, false);
+        insertPdfInto(pdfList, item, admin, true);
       }
     });
 
@@ -77,7 +78,7 @@
     setParams();
   });
 
-  function insertPdfInto(element, pdf, deletable) {
+  function insertPdfInto(element, pdf, deletable, defaultPdf) {
     const pdfItem = document.createElement("div");
     pdfItem.classList.add("pdf-item");
 
@@ -100,7 +101,7 @@
     editButton.classList.add("edit-button");
 
     editButton.onclick = (() => {
-      if (deletable) {
+      if (defaultPdf == false) {
         window.location = `/editor?id=${pdf.id}`;
       } else {
         window.location = `/editor?defaultId=${pdf.id}`;
@@ -116,7 +117,9 @@
       deleteButton.classList.add("delete-button");
 
       deleteButton.onclick = (() => {
-        fetch(`/api/pdf-templates/${email}/${pdf.id}`, {
+        const url = defaultPdf ? `/api/default-pdf/${pdf.id}` : `/api/pdf-templates/${email}/${pdf.id}`;
+
+        fetch(url, {
           method: "DELETE",
           headers: {
             "Content-type": "application/json; charset=UTF-8"
@@ -124,6 +127,7 @@
         })
           .then(response => response.json())
           .then(json => {
+
             if (json.status === 200) {
               element.removeChild(pdfItem);
             }
@@ -133,9 +137,7 @@
       buttons.appendChild(deleteButton);
     }
     info.appendChild(buttons);
-
     pdfItem.appendChild(info);
-
     element.appendChild(pdfItem)
   }
 </script>

@@ -26,15 +26,33 @@
         title="Password must contain at least one number, 
 						one alphabet, one symbol, and be at 
 						least 8 characters long" required />
-
       <label for="repassword">Re-type Password:</label>
       <input type="password" id="repassword" name="repassword" required />
-
       <button type="submit">
         Register
       </button>
     </form>
   </div>
+  <div id="alert">Alert</div>
 </body>
+<script>
+  function toggleAlert(message, color) {
+    let alert = document.getElementById("alert");
+    alert.classList.add("active");
+    setTimeout(() => {
+      alert.classList.remove("active");
+    }, 4000);
+    alert.style.backgroundColor = color;
+    alert.innerText = message;
+  }
+
+  window.onload = () => {
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    if (urlParams.get('errCode') === '409') {
+      toggleAlert('User already exist');
+    }
+  };
+</script>
 
 </html>

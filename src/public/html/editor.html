@@ -10,6 +10,7 @@
   <script src="/components/topnav.js" type="text/javascript" defer></script>
   <script src="/components/share-button.js" type="text/javascript" defer></script>
   <script src="/js/editor.js" type="text/javascript" defer></script>
+  <script src="/js/pdfController.js" type="text/javascript" defer></script>
 </head>
 
 <body>
@@ -19,8 +20,8 @@
       <div class="tool" draggable="true" data-element="text" title="Text">
         <img src="/images/textformat.png" alt="" data-element="text">
       </div>
-      <div class="tool" draggable="true" data-element="text-field" title="Text Field">
-        <img src="/images/character.cursor.ibeam.png" alt="" data-element="text-field">
+      <div class="tool" draggable="true" data-element="textField" title="Text Field">
+        <img src="/images/character.cursor.ibeam.png" alt="" data-element="textField">
       </div>
       <div class="tool" draggable="true" data-element="box" title="Box">
         <img src="/images/square.png" alt="" data-element="box">
@@ -31,16 +32,22 @@
       <div class="tool" draggable="true" data-element="table" title="Table">
         <img src="/images/tablecells.png" alt="" data-element="table">
       </div>
+      <div class="tool" draggable="true" data-element="checkBox" title="Check Box">
+        <img src="/images/checkmark.square.png" alt="" data-element="table">
+      </div>
+      <div class="tool" draggable="true" data-element="radioButton" title="Radio Button">
+        <img src="/images/checkmark.circle.png" alt="" data-element="table">
+      </div>
     </div>
     <div id="canvas" ondragover="allowDrop(event)"></div>
     <div>
-      <input type="text" placeholder="Filename" id="filename">
+      <input class="filename-input" type="text" placeholder="Filename" id="filename">
       <div id="property-sidebar"></div>
     </div>
 
     <div class="buttons">
       <button class="save-button" onclick="saveTemplate()" title="Save Template">Save</button>
-      <button class="save-default-button" onclick="saveDefaultTemplate()" title="Save Template as default">Save as default</button>
+      <button class="save-default-button" id="saveDefaultButton" onclick="saveDefaultTemplate()" title="Save Template as default">Save as default</button>
       <button class="download-button" onclick="downloadPdf()" title="Download PDF">Download</button>
       <share-button></share-button>
     </div>

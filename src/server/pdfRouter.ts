@@ -1,18 +1,24 @@
 import express, { Request, Response } from "express";
 import { PDF } from './pdf';
 import { DataBase } from './db';
+import dotenv from 'dotenv';
 
 const router = express.Router();
-let dotenv = require('dotenv').config();
+dotenv.config();
 
 router.post('/pdf', async (req: Request, res: Response) => {
   const pdfBytes = await new PDF().makePdf(req.body.pdf);
-  res.end(new Buffer(pdfBytes));
+  res.end(Buffer.from(pdfBytes));
 });
 
+router.post('/test', async (req: Request, res: Response) => {
+  const pdfBytes = await new PDF().loadAndEditPdf(req.body.fileUrl, req.body.options);
+  res.end(Buffer.from(pdfBytes));
+});
+
+
 router.post('/send', async (req: Request, res: Response) => {
-  const emails = req.body.emails;
-  
+  const emails = req.body.emails;  
   const pdfBytes = await new PDF().makePdf(req.body.pdf);
 
   if (emails == null || !Array.isArray(emails) || !emails.length) { return; };
@@ -81,9 +87,8 @@ router.post('/save-pdf', async (req: Request, res: Response) => {
     res.json({ status: 404 });
     return;
   }
-
+  
   const pdfString = JSON.stringify(pdf).replace(/"/g, "&");
-  console.log(pdfString);
 
   DataBase.shared.insert('pdfTemplates', 'userEmail, pdfJson, filename', `"${email}", "${pdfString}", "${filename}"`, (err) => {
     if (err == null) {
@@ -116,7 +121,7 @@ router.get('/pdf-template/:id', (req: Request, res: Response) => {
 
   DataBase.shared.get('pdfTemplates', ['*'], ['id'], [req.params.id], (err, row: any) => {
     if (err || row == undefined) { return; };
-    if (row.pdfJson) {
+    if (row.pdfJson) {      
       res.json({ pdf: row.pdfJson.replace(/&/g, "\""), id: row.id, filename: row.filename });
     } else {
       return res.json({ status: 404 });
@@ -160,10 +165,10 @@ router.get('/default-pdf/:id', (req: Request, res: Response) => {
   }
 
   DataBase.shared.getAll('deafultPdfs', ['*'], ['id'], [id], (err, row: any) => {
-    if (err != null || row == undefined) { console.log(123); return; }
-    
+    if (err != null || row == undefined) { return; }
+        
     if (row[0].pdfJson) {
-      return res.json({ pdf: row[0].pdfJson.replace(/&/g, "\""), id: row.id, filename: row.filename });
+      return res.json({ pdf: row[0].pdfJson.replace(/&/g, "\""), id: row[0].id, filename: row[0].filename });
     } else {
       return res.json({ status: 404 });
     }
@@ -184,8 +189,7 @@ router.post('/save-default-pdf', async (req: Request, res: Response) => {
   }
 
   const pdfString = JSON.stringify(pdf).replace(/"/g, "&");
-  console.log(pdfString);
-
+  
   DataBase.shared.insert('deafultPdfs', 'pdfJson, filename', `"${pdfString}", "${filename}"`, (err) => {
     if (err == null) {
       return res.json({ status: 200 })
@@ -194,5 +198,17 @@ router.post('/save-default-pdf', async (req: Request, res: Response) => {
   });
 });
 
+router.delete('/default-pdf/:id', (req: Request, res: Response) => {
+  if (req.params.id == undefined) {
+    res.json({ status: 404 });
+    return;
+  }
+
+  DataBase.shared.delete('deafultPdfs', ['id'], [req.params.id], (err) => {
+    if (err == null) {
+      res.json({ status: 200 });
+    }
+  });
+});
 
 export { router as pdfRouter };

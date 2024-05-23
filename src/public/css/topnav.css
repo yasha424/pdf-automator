@@ -109,3 +109,7 @@ body {
   width: min-content;
   height: max-content;
 }
+
+#loadOverlay { 
+  display: none;
+}

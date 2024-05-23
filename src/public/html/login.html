@@ -27,16 +27,39 @@
       Create an account
     </a>
   </div>
+  <div id="alert">Alert</div>
 </body>
 <script>
+  function toggleAlert(message, color) {
+    let alert = document.getElementById("alert");
+    alert.classList.add("active");
+    setTimeout(() => {
+      alert.classList.remove("active");
+    }, 4000);
+    alert.style.backgroundColor = color;
+    alert.innerText = message;
+  }
+
   window.onload = (() => {
     let email = localStorage.getItem('email');
     let firstName = localStorage.getItem('firstName');
     let lastName = localStorage.getItem('lastName');
-    
+
     if (email != null && firstName != null && lastName != null) {
       window.location = '/main';
+      return;
+    }
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    if (urlParams.get('errCode') === '401') {
+      toggleAlert('Email or password is incorrect');
+    } else if (urlParams.get('errCode') === '402') {
+      toggleAlert('Password is incorrect');
+    } else if (urlParams.get('errCode')) {
+      toggleAlert('Internal error');
     }
   });
 </script>
+
 </html>

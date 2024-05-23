@@ -1,32 +1,79 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response } from 'express';
 import { DataBase } from './db';
+import { scrypt, randomBytes, timingSafeEqual } from 'crypto';
+import { promisify } from 'util';
 
 const router = express.Router();
+const scryptAsync = promisify(scrypt);
 
-router.get('/register', (req: Request, res: Response) => {
-  const query = req.query;
-  console.log(query);
-  
+router.get('/register', async (req: Request, res: Response) => {
+  const { first, last, email, password, repassword } = req.query;
 
-  if (query.email !== undefined && query.password != undefined && query.password == query.repassword) {
-    DataBase.shared.insert('users', 'firstName, lastName, email, password', `"${query.first}", "${query.last}", "${query.email}", "${query.password}"`, (err) => {
-      if (err == null) {
-        return res.redirect('/main' + `?email=${query.email}&lastName=${query.last}&firstName=${query.first}`);
+  if (first && last && email && password && typeof password === 'string' && password == repassword) {
+    const salt = randomBytes(16).toString("hex");
+    const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+    const hashedPassword = `${buf.toString("hex")}.${salt}`;
+
+    DataBase.shared.get('users', ['1'], ['email'], [email], (err, user) => {
+      if (!user) {
+        DataBase.shared.insert('users', 'firstName, lastName, email, password', `"${first}", "${last}", "${email}", "${hashedPassword}"`, (err) => {
+          if (err == null) {
+            return res.redirect('/main' + `?email=${email}&lastName=${last}&firstName=${first}`);
+          }
+          return res.redirect('/register?errCode=401');
+        });    
+      } else {
+        return res.redirect('/register?errCode=409');
       }
-      return res.json({ status: 401 });
     });
+  } else {
+    return res.redirect('/register?errCode=400');
   }
 });
 
 router.get('/login', async (req: Request, res: Response) => {
-  const query = req.query;
+  const { email, password } = req.query;
 
-  DataBase.shared.get('users', ['firstName', 'lastName', 'email'], ['email', 'password'], [query.email, query.password], (err, user) => {
-    if (user != null) {
-      return res.redirect(`/main?email=${user.email}&firstName=${user.firstName}&lastName=${user.lastName}`);
+  if (!email || !password || !(typeof password === 'string')) {
+    return res.redirect('/login?errCode=401');
+  }
+
+  DataBase.shared.get('users', ['firstName', 'lastName', 'email', 'password', 'admin'], ['email'], [email], async (err, user) => {
+    if (err) {
+      return res.redirect('/login?errCode=400');
+    }
+    if (user != undefined) {
+      const [hashedPassword, salt] = user.password.split(".");
+      if (!hashedPassword || !salt) {
+        return res.redirect('/login?errCode=400');
+      }
+      const hashedPasswordBuf = Buffer.from(hashedPassword, "hex");
+      const suppliedPasswordBuf = (await scryptAsync(password, salt, 64)) as Buffer;
+      const isPasswordValid = timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
+
+      if (isPasswordValid) {
+        return res.redirect(`/main?email=${user.email}&firstName=${user.firstName}&lastName=${user.lastName}&admin=${user.admin}`);
+      }
+      return res.redirect('/login?errCode=402');
     } 
-    return res.json({ status: 401 });
+    return res.redirect('/login?errCode=401');
   });
+});
+
+router.post('/change-privilege', async (req: Request, res: Response) => {
+  const { email, key, admin } = req.body;
+  
+  if (key == process.env.CHANGE_PRIVILEGE_KEY) {
+    DataBase.shared.update('users', ['admin'], ['email'], [admin], [email, admin], err => {
+      if (err == null) {
+        return res.json({ status: 200 });
+      } else {
+        return res.json({ status: 404, error: err });
+      }
+    });
+  } else {
+    return res.json({ status: 204 });
+  }
 });
 
 export { router as loginRouter };

@@ -1,5 +1,6 @@
 import { Database } from 'sqlite3';
 import fs from 'fs';
+import { error } from 'console';
 
 class DataBase {
   static readonly shared = new DataBase();
@@ -15,10 +16,6 @@ class DataBase {
     this.createPdfTemplateTable();
     this.createUserTable();
     this.createDefaultPdfsTable();
-
-    // this.db.all('Select * from users', (err, rows) => {
-    //   console.log(rows);
-    // })
   }
 
   private createUserTable() {
@@ -27,7 +24,8 @@ class DataBase {
       firstName VARCHAR(200) NOT NULL,
       lastName VARCHAR(200) NOT NULL,
       email VARCHAR(200) NOT NULL,
-      password VARCHAR(200) NOT NULL
+      password VARCHAR(200) NOT NULL,
+      admin BOOLEAN NOT NULL DEFAULT FALSE
     )`);
   }
   
@@ -69,7 +67,7 @@ class DataBase {
       }
     }
     
-    this.db.get(request, equals, (err, result: any) => {
+    this.db.get(request, equals, (err, result: any) => {      
       callback?.(err, result);
     });
   }
@@ -102,9 +100,35 @@ class DataBase {
         }
       }
     }
+
     this.db.run(request, equals, (err: any) => {
       callback?.(err);
     });
+  }
+
+  update(table: string, set: string[], where?: string[], data?: any[], equals?: any[], callback?: (err: Error | null) => void) {
+    let request = `UPDATE ${table} `;
+    if (set && data && set.length == data.length) {
+      request += `SET `;
+      for (let i = 0; i < set.length; i++) {
+        request += `${set[i]} = ?`;
+        if (i !== set.length - 1) {
+          request += ' AND ';
+        }
+      }
+    }
+
+    if (where && equals && where?.length == equals?.length) {
+      request += `WHERE `;
+      for (let i = 0; i < where?.length; i++) {
+        request += `${where?.[i]} = ?`;
+        if (i !== where?.length - 1) {
+          request += ' AND ';
+        }
+      }
+    }
+    
+    this.db.run(request, data, callback);
   }
 
   private validateValues(values: string): boolean {

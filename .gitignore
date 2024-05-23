@@ -4,3 +4,4 @@ dist/
 tmp/
 **/*.pdf
 .env
+*.pem
