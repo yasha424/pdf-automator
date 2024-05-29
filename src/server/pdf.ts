@@ -1,12 +1,31 @@
-import { LineCapStyle, PDFImage, PDFDocument as PDFLib, rgb } from 'pdf-lib';
-import fs from 'fs';
+import { PDFDocument as PDFLib, drawTextField, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit'
+import fs, { read } from 'fs';
+import path from 'path';
 
 class PDF {
+  private fontBytes: Buffer;
+
+  constructor() {
+    this.fontBytes = fs.readFileSync(path.join(__dirname, 'fonts/Roboto-Regular.ttf'));
+  }
+
   async makePdf(pdf: any): Promise<Uint8Array> {
-    let pdfDoc = await PDFLib.create()
+    let pdfDoc = await PDFLib.create();
+    pdfDoc.registerFontkit(fontkit);
+    const customFont = await pdfDoc.embedFont(this.fontBytes);
 
     const page = pdfDoc.addPage();
+    page.setFont(customFont);
     const form = pdfDoc.getForm();
+    // console.log(customFont.getCharacterSet()[3]);
+    // return await pdfDoc.save();
+    
+
+    const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
+    form.updateFieldAppearances = function () {
+      return rawUpdateFieldAppearances(customFont);
+    };
 
     for (let i = 0; i < pdf.length; i++) {
       const { height } = page.getSize();
@@ -21,9 +40,10 @@ class PDF {
       } else if (pdf[i].textField) { // textField
         const textField = pdf[i].textField;
         textField.options.y = height - textField.options.y - textField.options.height;
-        const field = form.createTextField('field' + i);
+        const field = form.createTextField(textField.name || `field${i}`);
         field.setText(pdf[i].textField.label);
-        field.addToPage(page, pdf[i].textField.options)
+        field.addToPage(page, pdf[i].textField.options);
+        field.updateAppearances(customFont);
       } else if (pdf[i].box) { // rectangle
         const box = pdf[i].box;
         box.options.y = height - box.options.y - box.options.height;
@@ -44,7 +64,7 @@ class PDF {
           page.drawImage(pngImage, image.options);
         }
       } else if (pdf[i].radioGroup) { // radioGroup
-        const radioGroup = form.createRadioGroup(pdf[i].radioGroup.name);
+        const radioGroup = form.createRadioGroup(pdf[i].radioGroup.name || `radioGroup${i}`);
         for (const option of pdf[i].radioGroup.options) {
           option.options.y = height - option.options.y - (option.options.height ?? 50);
           radioGroup.addOptionToPage(option.label, page, option.options);
@@ -53,7 +73,7 @@ class PDF {
           }
         }
       } else if (pdf[i].checkBox) { // checkBox
-        const checkBox = form.createCheckBox(pdf[i].checkBox.name);
+        const checkBox = form.createCheckBox(pdf[i].checkBox.name || `checkBox${i}`);
         pdf[i].checkBox.options.y = height - pdf[i].checkBox.options.y - (pdf[i].checkBox.options.height ?? 50);;
         checkBox.addToPage(page, pdf[i].checkBox.options);
         if (pdf[i].checkBox.selected === true) {
@@ -62,7 +82,6 @@ class PDF {
       }
     }
     const pdfBytes = await pdfDoc.save();
-    // LineCapStyle.Butt;
     return pdfBytes;
   }  
 
@@ -71,7 +90,7 @@ class PDF {
     const pdfDoc = await PDFLib.load(uint8Array);
     const form = pdfDoc.getForm();
 
-    for (const key in options) {
+    for (const key in options) {      
       try {
         if (key === 'checkBox') {
           for (const box of options[key]) {
@@ -83,8 +102,10 @@ class PDF {
             }
           }
         } else if (key === 'textField') {
-          const textField = form.getTextField(options[key].name);
-          textField.setText(options[key].label);
+          for (const field of options[key]) {
+            const textField = form.getTextField(field.name);
+            textField.setText(field.label);
+          }
         } else if (key === 'radioGroup') {
           const radioGroup = form.getRadioGroup(options[key].name);
           radioGroup.select(options[key].selected);

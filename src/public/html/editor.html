@@ -29,26 +29,26 @@
       <div class="tool" draggable="true" data-element="image" title="Text">
         <img src="/images/photo.artframe.png" alt="" data-element="image">
       </div>
-      <div class="tool" draggable="true" data-element="table" title="Table">
+      <!-- <div class="tool" draggable="true" data-element="table" title="Table">
         <img src="/images/tablecells.png" alt="" data-element="table">
-      </div>
+      </div> -->
       <div class="tool" draggable="true" data-element="checkBox" title="Check Box">
-        <img src="/images/checkmark.square.png" alt="" data-element="table">
+        <img src="/images/checkmark.square.png" alt="" data-element="checkBox">
       </div>
       <div class="tool" draggable="true" data-element="radioButton" title="Radio Button">
-        <img src="/images/checkmark.circle.png" alt="" data-element="table">
+        <img src="/images/checkmark.circle.png" alt="" data-element="radioButton">
       </div>
     </div>
     <div id="canvas" ondragover="allowDrop(event)"></div>
     <div>
-      <input class="filename-input" type="text" placeholder="Filename" id="filename">
+      <input class="filename-input" type="text" placeholder="Назва файлу" id="filename">
       <div id="property-sidebar"></div>
     </div>
 
     <div class="buttons">
-      <button class="save-button" onclick="saveTemplate()" title="Save Template">Save</button>
-      <button class="save-default-button" id="saveDefaultButton" onclick="saveDefaultTemplate()" title="Save Template as default">Save as default</button>
-      <button class="download-button" onclick="downloadPdf()" title="Download PDF">Download</button>
+      <button class="save-button" onclick="saveTemplate()" title="Зберегти Шаблон">Зберегти</button>
+      <button class="save-default-button" id="saveDefaultButton" onclick="saveDefaultTemplate()" title="Зберегти Шаблон як базовий">Зберегти як базовий</button>
+      <button class="download-button" id="downloadPdf" onclick="downloadPdf()" title="Завантажити PDF">Завантажити</button>
       <share-button></share-button>
     </div>
   </div>

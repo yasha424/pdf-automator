@@ -2,10 +2,10 @@ class ShareButton extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
   <link rel="stylesheet" href="/css/share-button.css">
-  <button class="share-button" onclick="toggleShareOptions()">Share</button>
+  <button class="share-button" onclick="toggleShareOptions()">Поділитись</button>
   <div id="share-options">
-    <textarea class="email-input" id="emails" rows="3" placeholder="Email"></textarea>
-    <button class="send-button" onclick=sendPdf()>Send</button>
+    <textarea class="email-input" id="emails" rows="3" placeholder="Введіть адреси Email через кому"></textarea>
+    <button class="send-button" onclick=sendPdf()>Надіслати</button>
   </div>
     `;
   }

@@ -26,8 +26,10 @@ async function getPdfElements() {
         const height = parseInt(children.style.height) / 1.34;
         const border = parseInt(children.style.border) || 1;
 
+        console.log(children.name);
         element = {
           textField: {
+            name: children.name,
             label: children.innerText,
             options: {
               x: parseInt(item.style.left) / 1.34,
@@ -72,7 +74,10 @@ async function getPdfElements() {
               }
             }
           }
-
+          if (children.childNodes[1].files.length === 0) {
+            element.image.jpgData = b64
+            break;
+          }
           if (children.childNodes[1].files[0].type === "image/jpeg") {
             element.image.jpgData = b64
           } else if (children.childNodes[1].files[0].type === "image/png") {
@@ -86,7 +91,7 @@ async function getPdfElements() {
 
         element = {
           checkBox: {
-            name: makeid(16),
+            name: children.name,
             options: {
               x: parseInt(item.style.left) / 1.34,
               y: parseInt(item.style.top) / 1.35 + 20,
@@ -102,7 +107,7 @@ async function getPdfElements() {
 
         element = {
           radioGroup: {
-            name: makeid(16),
+            name: children.name,
             options: [
               {
                 label: makeid(16),
@@ -161,6 +166,7 @@ async function saveDefaultTemplate() {
     .then(response => response.json())
     .then(json => {
       if (json.status === 200) {
+        changed = false;
         toggleAlert("PDF succesfully saved.", "green");
       }
     });
@@ -181,7 +187,12 @@ async function downloadPdf() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "file.pdf";
+      const filename = document.getElementById("filename").value;
+      if (filename !== "") {
+        a.download = document.getElementById("filename").value + (filename.endsWith('.pdf') ? "" : ".pdf");
+      } else {
+        a.download = "file.pdf";
+      }
       document.body.appendChild(a);
       a.click();
       URL.revokeObjectURL(url);

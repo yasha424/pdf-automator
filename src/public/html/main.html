@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Головна</title>
   <link rel="stylesheet" href="/css/main.css">
   <script src="/components/topnav.js" type="text/javascript" defer></script>
 </head>
@@ -12,16 +12,25 @@
 <body>
   <topnav-component></topnav-component>
   <div id="template-div">
-    <h2>Saved Templates</h2>
+    <h2>Збережені Шаблони</h2>
     <a href="/editor" id="editor-link" class="editor-link" title="Add new template">
       <img src="/images/plus.png" alt="" width="24px" height="24px">
     </a>
   </div>
   <div id="template-list"></div>
   <div id="template-div">
-    <h2>Default Templates</h2>
+    <h2>Базові Шаблони</h2>
   </div>
   <div id="default-template-list"></div>
+  <div id="fillFormDiv" class="fill-form-div">
+    <div id="fillForm" class="fill-form">
+      <div class="fill-inputs-div">
+        <button class="close-button"><img src="/images/xmark.png" onclick="closeFillForm()"></button>
+        <ul id="fillInputs"></ul>
+      </div>
+    </div>
+  </div>
+  <div id="alert">Alert</div>
 </body>
 <script>
   const queryString = window.location.search;
@@ -43,7 +52,7 @@
     lastName = localStorage.getItem('lastName');
     admin = localStorage.getItem('admin');
   }
-  
+
   fetch(`/api/pdf-templates/${email}`, {
     method: "GET",
     headers: {
@@ -68,7 +77,6 @@
     .then(response => response.json())
     .then(json => {
       const pdfList = document.getElementById("default-template-list");
-
       for (let item of json) {
         insertPdfInto(pdfList, item, admin, true);
       }
@@ -97,7 +105,7 @@
     info.appendChild(filename);
 
     const editButton = document.createElement("button");
-    editButton.innerText = "Edit";
+    editButton.innerText = "Редагувати";
     editButton.classList.add("edit-button");
 
     editButton.onclick = (() => {
@@ -111,9 +119,38 @@
     buttons.classList.add("buttons-div");
     buttons.appendChild(editButton);
 
-    if (deletable) {
+    if (!defaultPdf) {
+      const fillButton = document.createElement("button");
+      fillButton.innerText = "Заповнити";
+      fillButton.classList.add("fill-button");
+      fillButton.onclick = () => {
+        const fillFormDiv = document.getElementById("fillFormDiv");
+        const fillForm = document.getElementById("fillForm");
+        if (fillForm.style.display !== "block") {
+          fillForm.style.display = "block";
+          fillFormDiv.style.display = "block";
+
+          fetch("/api/get-pdf-form/" + pdf.id, {
+            method: 'GET',
+            headers: {
+              "Content-type": "application/json; charset=UTF-8"
+            }
+          })
+            .then(res => res.json())
+            .then(json => {
+              createFillForm(json, pdf.id);
+            });
+        } else {
+          fillForm.style.display = "none";
+          fillFormDiv.style.display = "none";
+        }
+      };
+      buttons.appendChild(fillButton);
+    }
+
+    if (deletable == true) {
       const deleteButton = document.createElement("button");
-      deleteButton.innerText = "Delete";
+      deleteButton.innerText = "Видалити";
       deleteButton.classList.add("delete-button");
 
       deleteButton.onclick = (() => {
@@ -127,7 +164,6 @@
         })
           .then(response => response.json())
           .then(json => {
-
             if (json.status === 200) {
               element.removeChild(pdfItem);
             }
@@ -139,6 +175,190 @@
     info.appendChild(buttons);
     pdfItem.appendChild(info);
     element.appendChild(pdfItem)
+  }
+
+  function closeFillForm() {
+    document.getElementById("fillForm").style.display = "none";
+    document.getElementById("fillFormDiv").style.display = "none";
+  }
+
+  const elementTypes = {
+    "text": "Текст",
+    "textField": "Текстове Поле",
+    "box": "Прямокутник",
+    "image": "Картинка",
+    "checkBox": "Прапорець",
+    "radioGroup": "Радіокнопка",
+  };
+
+  function createFillForm(pdfJson, pdfId) {
+    const list = document.getElementById('fillInputs');
+    list.innerHTML = '';
+    document.getElementById('fillInputs');
+
+    if (document.getElementById('buttonsDiv')) {
+      document.getElementById('buttonsDiv').remove();
+    }
+
+    for (const element of pdfJson) {
+      const elementType = Object.keys(element)[0];
+
+      const listItem = document.createElement('li');
+      const label = document.createElement('b');
+      label.innerText = elementTypes[elementType] + '\n';
+      listItem.appendChild(label);
+
+      const name = document.createElement('small');
+      name.innerText = 'Імʼя: ' + element[elementType].name;
+
+      if (elementType === "checkBox") {
+        const input = document.createElement('strong');
+        input.classList.add('fill-form-input');
+        const checkBox = document.createElement('input');
+        checkBox.type = 'checkbox';
+        input.innerText += ' Вибрано:';
+        input.appendChild(checkBox);
+        name.appendChild(input);
+      }
+
+      if (elementType === "radioGroup") {
+        const input = document.createElement('strong');
+        input.classList.add('fill-form-input');
+        const checkBox = document.createElement('input');
+        checkBox.type = 'checkbox';
+        input.innerText += ' Вибрано:';
+        input.appendChild(checkBox);
+        name.appendChild(input);
+      }
+
+      if (elementType === "textField") {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.classList.add('text-field-input');
+        name.appendChild(input);
+      }
+
+      listItem.appendChild(name);
+      list.appendChild(listItem);
+    }
+
+    const buttonsDiv = document.createElement('div');
+    buttonsDiv.classList.add('form-buttons');
+    buttonsDiv.id = 'buttonsDiv';
+    const downloadButton = document.createElement('button');
+    downloadButton.innerText = 'Завантажити';
+    const shareButton = document.createElement('button');
+    shareButton.innerText = 'Поділитись';
+
+    downloadButton.onclick = () => {
+      pdfFillData = { pdf: getPdfFillData(list) };
+
+      fetch('/api/fill-pdf/' + pdfId, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        },
+        body: JSON.stringify(pdfFillData)
+      })
+        .then(response => response.blob())
+        .then(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = "file.pdf";
+          document.body.appendChild(a);
+          a.click();
+          URL.revokeObjectURL(url);
+          a.remove();
+        })
+    };
+
+    // shareButton.onclick = () => {
+
+    // };
+
+    buttonsDiv.appendChild(downloadButton);
+    buttonsDiv.appendChild(shareButton);
+    list.parentElement.appendChild(buttonsDiv);
+
+
+    const shareDiv = document.createElement('div');
+    shareDiv.classList.add('share-div');
+    shareDiv.style.display = 'none';
+    const emailInput = document.createElement('textarea');
+    emailInput.classList.add('email-input');
+    emailInput.placeholder = 'Введіть адреси Email через кому';
+    const sendButton = document.createElement('button');
+    sendButton.classList.add('send-button');
+    sendButton.innerText = 'Надіслати';
+
+    sendButton.onclick = () => {
+      const emails = emailInput.value.split(',').map((value) => value.trim());
+      pdfFillData = { pdf: getPdfFillData(list) };
+      pdfFillData.emails = emails;
+      console.log(pdfFillData);
+      fetch('/api/fill-pdf/' + pdfId, {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json; charset=UTF-8"
+        },
+        body: JSON.stringify(pdfFillData)
+      })
+        .then(res => res.json())
+        .then(json => {
+          console.log(json.status);
+          if (json.status === 404) {
+            console.log(json.status);
+
+            toggleAlert('There was an error sending PDF.', 'red');
+          } else if (json.status === 200) {
+            toggleAlert('PDF sent successfully.', 'green');
+          }
+        });
+    };
+
+    shareDiv.appendChild(emailInput);
+    shareDiv.appendChild(sendButton);
+
+    shareButton.onclick = () => {
+      if (shareDiv.style.display === 'none') {
+        shareDiv.style.display = 'grid';
+      } else {
+        shareDiv.style.display = 'none';
+      }
+    };
+
+    list.parentElement.appendChild(shareDiv);
+  }
+
+  function getPdfFillData(list) {
+    pdfFillData = [];
+    list.childNodes.forEach((value, key) => {
+      const name = value.childNodes[1].innerText.split(' ')[1];
+      if (value.childNodes[0].innerText.includes('Текстове Поле')) {
+        const text = value.childNodes[1].lastChild.value;
+        pdfFillData.push({ textField: { name: name, label: text } });
+      } else {
+        const checked = value.childNodes[1].lastChild.lastChild.checked;
+
+        if (value.childNodes[0].innerText.includes('Прапорець')) {
+          pdfFillData.push({ checkBox: { name: name, selected: checked } });
+        } else {
+          pdfFillData.push({ radioGroup: { name: name, selected: checked } });
+        }
+      }
+    });
+    return pdfFillData;
+  }
+
+  function toggleAlert(message, color) {
+    let alert = document.getElementById("alert");
+    alert.classList.add("active");
+    setTimeout(() => {
+      alert.classList.remove("active");
+    }, 4000);
+    alert.style.backgroundColor = color;
+    alert.innerText = message;
   }
 </script>
 

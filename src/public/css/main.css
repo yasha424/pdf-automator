@@ -16,8 +16,8 @@
 
 .editor-link {
   margin-left: auto;
-  margin-right: 0px;
-  background-color: rgb(5, 185, 5);
+  margin-right: 4px;
+  background-color: rgba(5, 185, 5, 0.8);
   border-radius: 50%;
   align-content: center;
   height: 24px;
@@ -31,6 +31,10 @@
   height: 14px;
   width: 14px;
   margin-top: 4px;
+}
+
+.editor-link:hover {
+  background-color: rgb(5, 185, 5);
 }
 
 .doc-image {
@@ -51,31 +55,195 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
-.edit-button, .delete-button {
+.buttons-div button {
   border-radius: 15px;
   height: 30px;
-  width: 64px;
   border: 0px;
   background-color: gray;
   color: white;
-  margin-left: auto;
   margin-right: 10px;
 }
 
-.edit-button:hover, .delete-button:hover {
+.buttons-div button:hover {
+  background-color: black;
+
+}
+
+.buttons-div button:hover {
   cursor: pointer;
 }
 
-.delete-button {
-  background-color: red;
+.buttons-div .delete-button {
+  background-color: rgba(255, 0, 0, 0.8);
   margin-right: 0px;
 }
 
+.buttons-div .delete-button:hover {
+  background-color: rgb(255, 0, 0);
+}
+
 .buttons-div {
-  margin-top: auto;
-  margin-bottom: 0;
+  margin-left: 6px;
 }
 
 .filename {
+  margin-left: 8px;
+  margin-bottom: 8px;
+}
+
+.fill-form {
+  display: none;
+  position: fixed;
+  padding: 10px;
+  width: 320px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(255, 0, 0, 0.08);
+  border-radius: 18px;
+}
+
+.fill-form ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.fill-form ul li {
+  margin-top: 10px;
   margin-bottom: 10px;
+}
+
+.fill-form-input {
+  margin-left: 40px;
+}
+
+.text-field-input {
+  width: 98%;
+  height: 24px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  border: none;
+  border-radius: 12px;
+  padding: 0 4px;
+}
+
+.form-buttons {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.form-buttons button {
+  width: 45%;
+  height: 30px;
+  border-radius: 15px;
+  border: none;
+  background-color: gray;
+  color: white;
+}
+
+.form-buttons button:hover {
+  cursor: pointer;
+  background-color: black;
+}
+
+.fill-inputs-div {
+  background-color: white;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.close-button {
+  display: flex;
+  position: absolute;
+  border: none;
+  background-color: red;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  top: 20px;
+  right: 20px;
+}
+
+.close-button:hover {
+  cursor: pointer;
+}
+
+.close-button img {
+  position: absolute;
+  height: 60%;
+  right: 3px;
+  top: 4px;
+}
+
+.share-div {
+  display: none;
+}
+
+.email-input {
+  height: 64px;
+  border-radius: 16px;
+  border: none;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  padding: 8px;
+  margin: 8px 0;
+  resize: none;
+}
+
+.send-button {
+  border: none;
+  height: 30px;
+  border-radius: 15px;
+  background-color: rgb(13, 209, 6);
+  color: white;
+  opacity: 0.9;
+}
+
+.send-button:hover {
+  cursor: pointer;
+  opacity: 1;
+}
+
+#alert {
+  display: block;
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  height: 100px;
+  width: 240px;
+  background-color: rgba(255, 0, 0);
+  opacity: 0.9;
+  z-index: 10;
+  border-radius: 15px;
+  text-align: center;
+  align-content: center;
+  color: white;
+  transition: all 0.3s ease-out;
+  transform: translate(120%, 0);
+  padding: 8px;
+}
+
+.active {
+  transform: translate(0, 0) !important;
+}
+
+.fill-form-div {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 0, 0, 0.02);
+  animation: blur-in 0.3s ease-in forwards;
+}
+
+@keyframes blur-in {
+  from {
+    backdrop-filter: blur(0px);
+  }
+  to {
+    backdrop-filter: blur(2px);
+  }
 }

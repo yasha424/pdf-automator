@@ -1,6 +1,6 @@
 .share-button {
   width: 100%;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
   height: 40px;
   border-radius: 15px;
@@ -20,12 +20,13 @@
 }
 
 #share-options .email-input {
+  height: 80px;
   font-size: 12px;
-  width: 114px;
+  width: 146px;
   resize: none;
   border-radius: 15px;
   border: none;
-  padding: 4px;
+  padding: 6px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -33,9 +34,7 @@
   color: white;
   background-color: rgb(13, 209, 6);
   border: none;
-  width: 80%;
   border-radius: 15px;
-  margin-top: 10px;
-  margin-left: auto;
+  margin-top: 6px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
 }
