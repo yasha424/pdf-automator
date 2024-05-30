@@ -25,7 +25,7 @@
   <div id="fillFormDiv" class="fill-form-div">
     <div id="fillForm" class="fill-form">
       <div class="fill-inputs-div">
-        <button class="close-button"><img src="/images/xmark.png" onclick="closeFillForm()"></button>
+        <button class="close-button" onclick="closeFillForm()"><img src="/images/xmark.png" alt="Close"></button>
         <ul id="fillInputs"></ul>
       </div>
     </div>
@@ -109,7 +109,7 @@
     editButton.classList.add("edit-button");
 
     editButton.onclick = (() => {
-      if (defaultPdf == false) {
+      if (!defaultPdf) {
         window.location = `/editor?id=${pdf.id}`;
       } else {
         window.location = `/editor?defaultId=${pdf.id}`;
@@ -148,7 +148,7 @@
       buttons.appendChild(fillButton);
     }
 
-    if (deletable == true) {
+    if (deletable) {
       const deleteButton = document.createElement("button");
       deleteButton.innerText = "Видалити";
       deleteButton.classList.add("delete-button");
@@ -251,7 +251,7 @@
     shareButton.innerText = 'Поділитись';
 
     downloadButton.onclick = () => {
-      pdfFillData = { pdf: getPdfFillData(list) };
+      const pdfFillData = { pdf: getPdfFillData(list) };
 
       fetch('/api/fill-pdf/' + pdfId, {
         method: "POST",
@@ -273,10 +273,6 @@
         })
     };
 
-    // shareButton.onclick = () => {
-
-    // };
-
     buttonsDiv.appendChild(downloadButton);
     buttonsDiv.appendChild(shareButton);
     list.parentElement.appendChild(buttonsDiv);
@@ -294,7 +290,7 @@
 
     sendButton.onclick = () => {
       const emails = emailInput.value.split(',').map((value) => value.trim());
-      pdfFillData = { pdf: getPdfFillData(list) };
+      let pdfFillData = { pdf: getPdfFillData(list) };
       pdfFillData.emails = emails;
       console.log(pdfFillData);
       fetch('/api/fill-pdf/' + pdfId, {

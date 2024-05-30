@@ -66,10 +66,6 @@
 
 .buttons-div button:hover {
   background-color: black;
-
-}
-
-.buttons-div button:hover {
   cursor: pointer;
 }
 

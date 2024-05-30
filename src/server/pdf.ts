@@ -1,6 +1,6 @@
-import { PDFDocument, PDFFont, PDFForm, PDFDocument as PDFLib, PDFPage, drawTextField, rgb } from 'pdf-lib';
+import { PDFDocument, PDFFont, PDFForm, PDFDocument as PDFLib, PDFPage, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit'
-import fs, { read } from 'fs';
+import fs from 'fs';
 import path from 'path';
 
 class PDF {

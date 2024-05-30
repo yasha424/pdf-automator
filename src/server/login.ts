@@ -34,7 +34,7 @@ router.get('/register', async (req: Request, res: Response) => {
 router.get('/login', async (req: Request, res: Response) => {
   const { email, password } = req.query;
 
-  if (!email || !password || !(typeof password === 'string')) {
+  if (!email || !password || (typeof password !== 'string')) {
     return res.redirect('/login?errCode=401');
   }
 

@@ -293,10 +293,10 @@ function showElementProperties(element) {
     propertySidebar.appendChild(propertyDiv);
   }
 
-  for (const [key, value] of Object.entries(properties)) {
+  for (const entry of Object.entries(properties)) {
     const propertyDiv = document.createElement("div");
     propertyDiv.id = "property-div";
-    propertyDiv.innerHTML = `<strong>Тип:</strong> ${elementTypes[value]}`;
+    propertyDiv.innerHTML = `<strong>Тип:</strong> ${elementTypes[entry[1]]}`;
     propertySidebar.appendChild(propertyDiv);
   }
   
@@ -335,7 +335,7 @@ function showElementProperties(element) {
     const propertyDiv = document.createElement("div");
     propertyDiv.id = "property-div";
     propertyDiv.innerHTML = "<strong>Зберігати відношення:</strong>";
-    keepAspectRatioButton = document.createElement("input");
+    const keepAspectRatioButton = document.createElement("input");
     keepAspectRatioButton.type = "checkbox";
     keepAspectRatioButton.checked = element.childNodes[1].keepAspectRatio || false;
     keepAspectRatioButton.name = "keepAspectRatioButton";
@@ -364,7 +364,11 @@ function showElementProperties(element) {
     widthInput.max = 780;
     widthInput.value = parseFloat(element.childNodes[1].style.width);
     widthInput.onchange = () => {
-      widthInput.value = widthInput.value > 780 ? 780 : (widthInput.value < 20 ? 20 : widthInput.value);
+      if (widthInput.value > 780) {
+        widthInput.value = 780
+      } else {
+        widthInput.value = widthInput.value < 20 ? 20 : widthInput.value;
+      }
       element.childNodes[1].style.width = widthInput.value + "px";
       if (keepAspectRatioButton.checked) {
         heightInput.value = widthInput.value * element.childNodes[1].aspectRatio;
@@ -384,7 +388,11 @@ function showElementProperties(element) {
     heightInput.max = 1100;
     heightInput.value = parseFloat(element.childNodes[1].style.height);
     heightInput.onchange = () => {
-      heightInput.value = heightInput.value > 1100 ? 1100 : (heightInput.value < 20 ? 20 : heightInput.value);
+      if (heightInput.value > 1100) {
+        heightInput.value = 1100;
+      } else {
+        heightInput.value = heightInput.value < 20 ? 20 : heightInput.value;
+      }
       element.childNodes[1].style.height = heightInput.value + "px";
       if (keepAspectRatioButton.checked) {
         widthInput.value = heightInput.value * element.childNodes[1].aspectRatio;

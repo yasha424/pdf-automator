@@ -1,6 +1,5 @@
 import { Database } from 'sqlite3';
 import fs from 'fs';
-import { error } from 'console';
 
 class DataBase {
   static readonly shared = new DataBase();
