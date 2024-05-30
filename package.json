@@ -2,6 +2,7 @@
   "name": "pdf-generator",
   "version": "1.0.0",
   "description": "",
+  "engines": { "node": "22.2.0" },
   "main": "index.ts",
   "scripts": {
     "copy-files": "copyfiles -u 1 src/public/**/*.* src/public/*.* dist/src/",

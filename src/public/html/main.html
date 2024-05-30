@@ -323,12 +323,11 @@
         shareDiv.style.display = 'none';
       }
     };
-
     list.parentElement.appendChild(shareDiv);
   }
 
   function getPdfFillData(list) {
-    pdfFillData = [];
+    let pdfFillData = [];
     list.childNodes.forEach((value, key) => {
       const name = value.childNodes[1].innerText.split(' ')[1];
       if (value.childNodes[0].innerText.includes('Текстове Поле')) {

@@ -2,12 +2,13 @@ import { PDFDocument, PDFFont, PDFForm, PDFDocument as PDFLib, PDFPage, rgb } fr
 import fontkit from '@pdf-lib/fontkit'
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 class PDF {
   private fontBytes: Buffer;
 
   constructor() {
-    this.fontBytes = fs.readFileSync(path.join(__dirname, 'fonts/Roboto-Regular.ttf'));
+    this.fontBytes = fs.readFileSync(pathToFileURL('./src/public/fonts/Roboto-Regular.ttf'));
   }
 
   async makePdf(pdf: any): Promise<Uint8Array> {

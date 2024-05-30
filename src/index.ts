@@ -32,11 +32,6 @@ app.get('/editor', (req: Request, res: Response) => {
   res.sendFile(__dirname + '/public/html/editor.html');
 });
 
-const privateKey = fs.readFileSync(path.join(__dirname, "localhost-key.pem"));
-const certificate = fs.readFileSync(path.join(__dirname, "localhost.pem"));
-const credentials = { key: privateKey, cert: certificate };
-
-const server = https.createServer(credentials, app);
-server.listen(port, () => {
+app.listen(port, () => {
   console.log(`[server]: Server is running on port ${port}`);
 });
