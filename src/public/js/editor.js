@@ -1,9 +1,9 @@
 function Uint8ToBase64(u8Arr) {
-  var CHUNK_SIZE = 0x8000;
-  var index = 0;
-  var length = u8Arr.length;
-  var result = '';
-  var slice;
+  const CHUNK_SIZE = 0x8000;
+  let index = 0;
+  const length = u8Arr.length;
+  let result = '';
+  let slice;
   while (index < length) {
     slice = u8Arr.subarray(index, Math.min(index + CHUNK_SIZE, length));
     result += String.fromCharCode.apply(null, slice);
@@ -99,64 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     element.appendChild(deleteButton);
 
-    // if (type === "table") {
-    //   const table = document.createElement("div");
-    //   table.classList.add("table");
-    //   table.setAttribute("contenteditable", "true");
-
-    //   let rows = [];
-    //   let columns = [];
-
-    //   for (let i = 0; i < 2; i++) {
-    //     const row = document.createElement("tr");
-    //     for (let j = 0; j < 2; j++) {
-    //       const column = document.createElement("td");
-    //       column.innerText = i + ", " + j;
-    //       columns.push(column);
-    //       row.appendChild(column);
-    //     }
-    //     table.appendChild(row);
-    //     rows.push(row);
-    //   }
-
-    //   element.appendChild(table);
-
-    //   const handler = document.createElement("div");
-    //   handler.classList.add("resize-handle");
-
-    //   let clicked = false;
-    //   let startX, startY, startWidth, startHeight;
-
-    //   handler.addEventListener("mousedown", function (event) {
-    //     clicked = true;
-    //     startX = event.pageX;
-    //     startWidth = table.offsetWidth;
-    //     startY = event.pageY;
-    //     startHeight = table.offsetHeight;
-    //   });
-
-    //   document.addEventListener("mousemove", function (event) {
-    //     if (!clicked) return;
-    //     const newWidth = startWidth + (event.pageX - startX);
-    //     const newHeight = startHeight + (event.pageY - startY);
-    //     table.style.width = newWidth + "px";
-    //     table.style.height = newHeight + "px";
-
-    //     for (let row of rows) {
-    //       row.style.height = (newHeight / rows.length) + "px";
-    //     }
-
-    //     for (let column of columns) {
-    //       column.style.width = (newWidth / (columns.length / rows.length)) + "px";
-    //     }
-    //   });
-
-    //   handler.addEventListener("mouseup", function (event) {
-    //     clicked = false;
-    //   });
-
-    //   element.appendChild(handler);
-    /*} else*/ if (type === "textField") {
+    if (type === "textField") {
       const text = document.createElement("div");
       text.classList.add("text-field");
       text.classList.add("text-editable");

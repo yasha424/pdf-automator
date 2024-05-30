@@ -11,11 +11,6 @@ router.post('/pdf', async (req: Request, res: Response) => {
   res.end(Buffer.from(pdfBytes));
 });
 
-router.post('/fill', async (req: Request, res: Response) => {
-  const pdfBytes = await new PDF().loadAndEditPdf(req.body.fileUrl, req.body.options);
-  res.end(Buffer.from(pdfBytes));
-});
-
 router.post('/send', async (req: Request, res: Response) => {
   const emails = req.body.emails;
   const pdfBytes = await new PDF().makePdf(req.body.pdf);
