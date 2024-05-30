@@ -1,106 +1,109 @@
-import { LineCapStyle, PDFImage, PDFDocument as PDFLib, rgb } from 'pdf-lib';
-import fs from 'fs';
+import { PDFDocument, PDFFont, PDFForm, PDFDocument as PDFLib, PDFPage, drawTextField, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit'
+import fs, { read } from 'fs';
+import path from 'path';
 
 class PDF {
+  private fontBytes: Buffer;
+
+  constructor() {
+    this.fontBytes = fs.readFileSync(path.join(__dirname, 'fonts/Roboto-Regular.ttf'));
+  }
+
   async makePdf(pdf: any): Promise<Uint8Array> {
-    let pdfDoc = await PDFLib.create()
+    let pdfDoc = await PDFLib.create();
+    pdfDoc.registerFontkit(fontkit);
+    const customFont = await pdfDoc.embedFont(this.fontBytes);
 
     const page = pdfDoc.addPage();
+    page.setFont(customFont);
     const form = pdfDoc.getForm();
+
+    const rawUpdateFieldAppearances = form.updateFieldAppearances.bind(form);
+    form.updateFieldAppearances = function () {
+      return rawUpdateFieldAppearances(customFont);
+    };
 
     for (let i = 0; i < pdf.length; i++) {
       const { height } = page.getSize();
 
       if (pdf[i].text) { // plain text
-        const text = pdf[i].text;
-        const options = text.options
-        options.y = height - options.y
-        page.drawText(text.label, options)
+        this.drawText(page, pdf, i, height);
       } else if (pdf[i].table) { // table
         console.log(pdf[i].table);
       } else if (pdf[i].textField) { // textField
-        const textField = pdf[i].textField;
-        textField.options.y = height - textField.options.y - textField.options.height;
-        const field = form.createTextField('field' + i);
-        field.setText(pdf[i].textField.label);
-        field.addToPage(page, pdf[i].textField.options)
+        this.createTextField(form, page, pdf, i, height, customFont);
       } else if (pdf[i].box) { // rectangle
-        const box = pdf[i].box;
-        box.options.y = height - box.options.y - box.options.height;
-        box.options.borderColor = rgb(0, 0, 0);
-        page.drawRectangle(pdf[i].box.options);
+        this.drawRectangle(page, pdf, i, height);
       } else if (pdf[i].image) { // image
-        let image = pdf[i].image;
-        
-        if (image.jpgData) {
-          const jpgImage = await pdfDoc.embedJpg(image.jpgData);
-          const jpgDims = jpgImage.scale(0.5);
-          image.options.y = height - image.options.y - image.options.height;
-          page.drawImage(jpgImage, image.options);
-        } else if (image.pngData) {
-          const pngImage = await pdfDoc.embedPng(image.pngData);
-          const pngDims = pngImage.scale(0.5);
-          image.options.y = height - image.options.y - image.options.height;
-          page.drawImage(pngImage, image.options);
-        }
+        await this.drawImage(pdf[i].image, pdfDoc, page, height);
       } else if (pdf[i].radioGroup) { // radioGroup
-        const radioGroup = form.createRadioGroup(pdf[i].radioGroup.name);
-        for (const option of pdf[i].radioGroup.options) {
-          option.options.y = height - option.options.y - (option.options.height ?? 50);
-          radioGroup.addOptionToPage(option.label, page, option.options);
-          if (option.selected === true) {
-            radioGroup.select(option.label);
-          }
-        }
+        this.createRadioGroup(form, page, pdf, i, height);
       } else if (pdf[i].checkBox) { // checkBox
-        const checkBox = form.createCheckBox(pdf[i].checkBox.name);
-        pdf[i].checkBox.options.y = height - pdf[i].checkBox.options.y - (pdf[i].checkBox.options.height ?? 50);;
-        checkBox.addToPage(page, pdf[i].checkBox.options);
-        if (pdf[i].checkBox.selected === true) {
-          checkBox.check();
-        }
+        this.createCheckBox(form, page, pdf, i, height);
       }
     }
     const pdfBytes = await pdfDoc.save();
-    // LineCapStyle.Butt;
     return pdfBytes;
   }  
 
-  async loadAndEditPdf(url: string, options: any): Promise<Uint8Array> {
-    const uint8Array = fs.readFileSync(url);
-    const pdfDoc = await PDFLib.load(uint8Array);
-    const form = pdfDoc.getForm();
+  drawText(page: PDFPage, pdf: any, i: number, height: number) {
+    const text = pdf[i].text;
+    const options = text.options
+    options.y = height - options.y
+    page.drawText(text.label, options)
+  }
 
-    for (const key in options) {
-      try {
-        if (key === 'checkBox') {
-          for (const box of options[key]) {
-            const checkBox = form.getCheckBox(box.name);
-            if (box.checked) {
-              checkBox.check();
-            } else {
-              checkBox.uncheck();
-            }
-          }
-        } else if (key === 'textField') {
-          const textField = form.getTextField(options[key].name);
-          textField.setText(options[key].label);
-        } else if (key === 'radioGroup') {
-          const radioGroup = form.getRadioGroup(options[key].name);
-          radioGroup.select(options[key].selected);
-        } else if (key === 'dropdown') {
-          const dropdown = form.getDropdown(options[key].name);
-          dropdown.select(options[key].selected);
-        } else if (key === 'optionList') {
-          const optionList = form.getOptionList(options[key].name);
-          optionList.select(options[key].selected);
-        }
-      } catch (error) {
-        console.log(error);
+  createTextField(form: PDFForm, page: PDFPage, pdf: any, i: number, height: number, customFont?: PDFFont) {
+    const textField = pdf[i].textField;
+    textField.options.y = height - textField.options.y - textField.options.height;
+    const field = form.createTextField(textField.name || `field${i}`);
+    field.setText(pdf[i].textField.label);
+    field.addToPage(page, pdf[i].textField.options);
+    if (customFont) {
+      field.updateAppearances(customFont);
+    }
+  }
+
+  drawRectangle(page: PDFPage, pdf: any, i: number, height: number) {
+    const box = pdf[i].box;
+    box.options.y = height - box.options.y - box.options.height;
+    box.options.borderColor = rgb(0, 0, 0);
+    page.drawRectangle(pdf[i].box.options);
+  }
+
+  async drawImage(image: any, pdfDoc: PDFDocument, page: PDFPage, height: number) {
+    if (image.jpgData) {
+      const jpgImage = await pdfDoc.embedJpg(image.jpgData);
+      image.options.y = height - image.options.y - image.options.height;
+      page.drawImage(jpgImage, image.options);
+    } else if (image.pngData) {
+      const pngImage = await pdfDoc.embedPng(image.pngData);
+      image.options.y = height - image.options.y - image.options.height;
+      page.drawImage(pngImage, image.options);
+    }
+  }
+
+  createRadioGroup(form: PDFForm, page: PDFPage, pdf: any, i: number, height: number) {
+    const radioGroup = form.createRadioGroup(pdf[i].radioGroup.name || `radioGroup${i}`);
+    for (const option of pdf[i].radioGroup.options) {
+      option.options.y = height - option.options.y - (option.options.height ?? 50);
+      radioGroup.addOptionToPage(option.label, page, option.options);
+      if (option.selected === true) {
+        radioGroup.select(option.label);
       }
     }
-    return await pdfDoc.save();
   }
+
+  createCheckBox(form: PDFForm, page: PDFPage, pdf: any, i: number, height: number) {
+    const checkBox = form.createCheckBox(pdf[i].checkBox.name || `checkBox${i}`);
+    pdf[i].checkBox.options.y = height - pdf[i].checkBox.options.y - (pdf[i].checkBox.options.height ?? 50);;
+    checkBox.addToPage(page, pdf[i].checkBox.options);
+    if (pdf[i].checkBox.selected === true) {
+      checkBox.check();
+    }
+  }
+
 }
 
 export { PDF };

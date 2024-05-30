@@ -34,7 +34,7 @@ app.get('/editor', (req: Request, res: Response) => {
 
 const privateKey = fs.readFileSync(path.join(__dirname, "localhost-key.pem"));
 const certificate = fs.readFileSync(path.join(__dirname, "localhost.pem"));
-var credentials = { key: privateKey, cert: certificate };
+const credentials = { key: privateKey, cert: certificate };
 
 const server = https.createServer(credentials, app);
 server.listen(port, () => {

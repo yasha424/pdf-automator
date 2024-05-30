@@ -11,26 +11,20 @@ router.post('/pdf', async (req: Request, res: Response) => {
   res.end(Buffer.from(pdfBytes));
 });
 
-router.post('/test', async (req: Request, res: Response) => {
-  const pdfBytes = await new PDF().loadAndEditPdf(req.body.fileUrl, req.body.options);
-  res.end(Buffer.from(pdfBytes));
-});
-
-
 router.post('/send', async (req: Request, res: Response) => {
-  const emails = req.body.emails;  
+  const emails = req.body.emails;
   const pdfBytes = await new PDF().makePdf(req.body.pdf);
 
   if (emails == null || !Array.isArray(emails) || !emails.length) { return; };
 
   for (let email of emails) {
     let result = await sendMail("PDF-Editor", email, "PDF-Editor", "This is a pdf.", pdfBytes);
-    
+
     if (result.status === 404) {
       return res.json({ status: 404 });
     }
   }
-  res.json({status: 200});
+  res.json({ status: 200 });
 });
 
 async function sendMail(name: string, email: string, subject: string, message: string, pdfBytes: Uint8Array) {
@@ -40,15 +34,15 @@ async function sendMail(name: string, email: string, subject: string, message: s
 
   const data = JSON.stringify({
     "Messages": [{
-      "From": {"Email": "jakob20022404@gmail.com", "Name": "name"},
-      "To": [{"Email": email, "Name": name}],
+      "From": { "Email": "jakob20022404@gmail.com", "Name": "name" },
+      "To": [{ "Email": email, "Name": name }],
       "Subject": subject,
       "TextPart": message,
       "Attachments": [
         {
           "ContentType": "application/pdf",
-					"Filename": "pdf.pdf",
-					"Base64Content": Buffer.from(pdfBytes).toString('base64')
+          "Filename": "pdf.pdf",
+          "Base64Content": Buffer.from(pdfBytes).toString('base64')
         }
       ]
     }]
@@ -62,9 +56,9 @@ async function sendMail(name: string, email: string, subject: string, message: s
 
   let response = await fetch("https://api.mailjet.com/v3.1/send", requestOptions);
   let json: any = await response.json();
-  
+
   if (json.Messages[0].Status === "error") {
-    return { status: 404};
+    return { status: 404 };
   }
   return { status: 200 };
 }
@@ -87,7 +81,7 @@ router.post('/save-pdf', async (req: Request, res: Response) => {
     res.json({ status: 404 });
     return;
   }
-  
+
   const pdfString = JSON.stringify(pdf).replace(/"/g, "&");
 
   DataBase.shared.insert('pdfTemplates', 'userEmail, pdfJson, filename', `"${email}", "${pdfString}", "${filename}"`, (err) => {
@@ -121,7 +115,7 @@ router.get('/pdf-template/:id', (req: Request, res: Response) => {
 
   DataBase.shared.get('pdfTemplates', ['*'], ['id'], [req.params.id], (err, row: any) => {
     if (err || row == undefined) { return; };
-    if (row.pdfJson) {      
+    if (row.pdfJson) {
       res.json({ pdf: row.pdfJson.replace(/&/g, "\""), id: row.id, filename: row.filename });
     } else {
       return res.json({ status: 404 });
@@ -159,14 +153,14 @@ router.get('/default-pdfs', (req: Request, res: Response) => {
 
 router.get('/default-pdf/:id', (req: Request, res: Response) => {
   let id = req.params.id;
-  
+
   if (id == null) {
     return res.json({ status: 404 });
   }
 
   DataBase.shared.getAll('deafultPdfs', ['*'], ['id'], [id], (err, row: any) => {
     if (err != null || row == undefined) { return; }
-        
+
     if (row[0].pdfJson) {
       return res.json({ pdf: row[0].pdfJson.replace(/&/g, "\""), id: row[0].id, filename: row[0].filename });
     } else {
@@ -189,7 +183,7 @@ router.post('/save-default-pdf', async (req: Request, res: Response) => {
   }
 
   const pdfString = JSON.stringify(pdf).replace(/"/g, "&");
-  
+
   DataBase.shared.insert('deafultPdfs', 'pdfJson, filename', `"${pdfString}", "${filename}"`, (err) => {
     if (err == null) {
       return res.json({ status: 200 })
@@ -207,6 +201,66 @@ router.delete('/default-pdf/:id', (req: Request, res: Response) => {
   DataBase.shared.delete('deafultPdfs', ['id'], [req.params.id], (err) => {
     if (err == null) {
       res.json({ status: 200 });
+    }
+  });
+});
+
+router.get('/get-pdf-form/:id', (req: Request, res: Response) => {
+  if (!req.params.id) {
+    return res.json({ status: 402 });
+
+  }
+  DataBase.shared.get('pdfTemplates', ['*'], ['id'], [req.params.id], (err, pdf) => {
+    if (err) { return; }
+    const pdfJson = JSON.parse(pdf.pdfJson.replace(/&/g, "\""));
+    const filteredPdf = pdfJson.filter((el: any, index: number) => {
+      return ['checkBox', 'radioGroup', 'textField'].includes(Object.keys(el)[0]);
+    });
+
+    return res.json(filteredPdf);
+  });
+});
+
+router.post('/fill-pdf/:id', (req: Request, res: Response) => {
+  if (!req.params.id) {
+    return res.json({ status: 402 });
+  }
+
+  DataBase.shared.get('pdfTemplates', ['*'], ['id'], [req.params.id], async (err, pdf) => {
+    if (err) { return; }
+    const pdfJson = JSON.parse(pdf.pdfJson.replace(/&/g, "\""));
+
+    for (const element of req.body.pdf) {
+      const type = Object.keys(element)[0];
+      const name = element[type].name;
+
+      for (let i = 0; i < pdfJson.length; i++) {
+        if (Object.keys(pdfJson[i])[0] === type && pdfJson[i][type]['name'] === name) {
+          if (type === 'textField') {
+            pdfJson[i][type].label = element[type].label;
+          } else if (type === 'checkBox') {
+            pdfJson[i][type].selected = element[type].selected;
+          } else if (type === 'radioGroup') {
+            pdfJson[i][type].options[0].selected = element[type].selected;
+          }
+          break;
+        } else {
+          continue;
+        }
+      }
+    }
+    const pdfBytes = await new PDF().makePdf(pdfJson);
+
+    if (req.body.emails) {
+      for (const email of req.body.emails) {
+        const result = await sendMail('This is a PDF file', email, '', 'This PDF file was generated with PDF-Editor', pdfBytes);
+        if (result.status === 404) {
+          return res.json({ status: 404 });
+        }
+      }
+      return res.json({ status: 200 });
+    } else {
+      return res.end(Buffer.from(pdfBytes));
     }
   });
 });

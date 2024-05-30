@@ -1,3 +1,130 @@
+function getTextElement(item, children) {
+  const width = parseInt(children.style.width) / 1.34;
+  const height = parseInt(children.style.height) / 1.34;
+
+  element = {
+    text: {
+      label: children.innerText,
+      options: {
+        x: (parseInt(item.style.left) / 1.34),
+        y: (parseInt(item.style.top) / 1.34) + 28,
+        size: 12, width: width, height: height
+      }
+    }
+  };
+  return element;
+}
+
+function getTextFieldElement(item, children) {
+  const width = parseInt(children.style.width) / 1.34;
+  const height = parseInt(children.style.height) / 1.34;
+  const border = parseInt(children.style.border) || 1;
+
+  element = {
+    textField: {
+      name: children.name,
+      label: children.innerText,
+      options: {
+        x: parseInt(item.style.left) / 1.34,
+        y: parseInt(item.style.top) / 1.35 + 20,
+        width: width, height: height, borderWidth: border
+      }
+    }
+  };
+  return element;
+}
+
+function getBoxElement(item, children) {
+  const width = parseInt(children.style.width) / 1.34;
+  const height = parseInt(children.style.height) / 1.34;
+  const border = parseInt(children.style.border) || 1;
+
+  element = {
+    box: {
+      options: {
+        x: parseInt(item.style.left) / 1.34,
+        y: parseInt(item.style.top) / 1.35 + 20,
+        width: width, height: height, borderWidth: border
+      }
+    }
+  };
+  return element;
+}
+
+function getCheckBoxElement(item, children) {
+  const width = parseInt(children.style.width) / 1.34;
+  const height = parseInt(children.style.height) / 1.34;
+
+  element = {
+    checkBox: {
+      name: children.name,
+      options: {
+        x: parseInt(item.style.left) / 1.34,
+        y: parseInt(item.style.top) / 1.35 + 20,
+        width: width, height: height
+      },
+      selected: children.childNodes.length !== 0
+    }
+  }
+  return element;
+}
+
+async function getImageElement(item, children) {
+  const image = children.childNodes[0];
+
+  if (image.src) {
+    const buffer = await fetch(image.src).then(async r => (await r.blob()).arrayBuffer());
+    const bytes = new Uint8Array(buffer);
+    const b64 = Uint8ToBase64(bytes);
+
+    const width = parseInt(children.style.width) / 1.34;
+    const height = parseInt(children.style.height) / 1.34;
+
+    element = {
+      image: {
+        options: {
+          x: parseInt(item.style.left) / 1.34,
+          y: parseInt(item.style.top) / 1.35 + 20,
+          width: width, height: height
+        }
+      }
+    }
+    if (children.childNodes[1].files.length === 0) {
+      element.image.jpgData = b64
+      return element;
+    }
+    if (children.childNodes[1].files[0].type === "image/jpeg") {
+      element.image.jpgData = b64
+    } else if (children.childNodes[1].files[0].type === "image/png") {
+      element.image.pngData = b64
+    }
+    return element;
+  }
+}
+
+function getRadioButtonElement(item, children) {
+  const width = parseInt(children.style.width) / 1.34;
+  const height = parseInt(children.style.height) / 1.34;
+
+  element = {
+    radioGroup: {
+      name: children.name,
+      options: [
+        {
+          label: makeid(16),
+          options: {
+            x: parseInt(item.style.left) / 1.34,
+            y: parseInt(item.style.top) / 1.35 + 20,
+            width: width, height: height
+          },
+          selected: children.childNodes.length !== 0
+        }
+      ]
+    }
+  }
+  return element;
+}
+
 async function getPdfElements() {
   const elements = document.getElementsByClassName("element");
   let pdf = [];
@@ -5,117 +132,24 @@ async function getPdfElements() {
     let element = {};
     for (const children of item.children) {
       if (children.classList.contains("text")) {
-        const width = parseInt(children.style.width) / 1.34;
-        const height = parseInt(children.style.height) / 1.34;
-
-        element = {
-          text: {
-            label: children.innerText,
-            options: {
-              x: (parseInt(item.style.left) / 1.34),
-              y: (parseInt(item.style.top) / 1.34) + 28,
-              size: 12, width: width, height: height
-            }
-          }
-        };
+        element = getTextElement(item, children);
         break;
       } else if (children.classList.contains("table")) {
         console.log(children);
       } else if (children.classList.contains("text-field")) {
-        const width = parseInt(children.style.width) / 1.34;
-        const height = parseInt(children.style.height) / 1.34;
-        const border = parseInt(children.style.border) || 1;
-
-        element = {
-          textField: {
-            label: children.innerText,
-            options: {
-              x: parseInt(item.style.left) / 1.34,
-              y: parseInt(item.style.top) / 1.35 + 20,
-              width: width, height: height, borderWidth: border
-            }
-          }
-        };
+        element = getTextFieldElement(item, children);
         break;
       } else if (children.classList.contains("box")) {
-        const width = parseInt(children.style.width) / 1.34;
-        const height = parseInt(children.style.height) / 1.34;
-        const border = parseInt(children.style.border) || 1;
-
-        element = {
-          box: {
-            options: {
-              x: parseInt(item.style.left) / 1.34,
-              y: parseInt(item.style.top) / 1.35 + 20,
-              width: width, height: height, borderWidth: border
-            }
-          }
-        };
+        element = getBoxElement(item, children);
         break;
       } else if (children.classList.contains("image-element")) {
-        const image = children.childNodes[0];
-
-        if (image.src) {
-          const buffer = await fetch(image.src).then(async r => (await r.blob()).arrayBuffer());
-          const bytes = new Uint8Array(buffer);
-          const b64 = Uint8ToBase64(bytes);
-
-          const width = parseInt(children.style.width) / 1.34;
-          const height = parseInt(children.style.height) / 1.34;
-
-          element = {
-            image: {
-              options: {
-                x: parseInt(item.style.left) / 1.34,
-                y: parseInt(item.style.top) / 1.35 + 20,
-                width: width, height: height
-              }
-            }
-          }
-
-          if (children.childNodes[1].files[0].type === "image/jpeg") {
-            element.image.jpgData = b64
-          } else if (children.childNodes[1].files[0].type === "image/png") {
-            element.image.pngData = b64
-          }
-        }
+        element = await getImageElement(item, children);
         break;
       } else if (children.classList.contains("check-box-container")) {
-        const width = parseInt(children.style.width) / 1.34;
-        const height = parseInt(children.style.height) / 1.34;
-
-        element = {
-          checkBox: {
-            name: makeid(16),
-            options: {
-              x: parseInt(item.style.left) / 1.34,
-              y: parseInt(item.style.top) / 1.35 + 20,
-              width: width, height: height
-            },
-            selected: children.childNodes.length !== 0
-          }
-        }
+        element = getCheckBoxElement(item, children);
         break;
       } else if (children.classList.contains("radio-button-container")) {
-        const width = parseInt(children.style.width) / 1.34;
-        const height = parseInt(children.style.height) / 1.34;
-
-        element = {
-          radioGroup: {
-            name: makeid(16),
-            options: [
-              {
-                label: makeid(16),
-                options: {
-                  x: parseInt(item.style.left) / 1.34,
-                  y: parseInt(item.style.top) / 1.35 + 20,
-                  width: width, height: height
-                },
-                selected: children.childNodes.length !== 0
-              }
-            ]
-          }
-        }
+        element = getRadioButtonElement(item, children);
         break;
       }
     }
@@ -161,6 +195,7 @@ async function saveDefaultTemplate() {
     .then(response => response.json())
     .then(json => {
       if (json.status === 200) {
+        changed = false;
         toggleAlert("PDF succesfully saved.", "green");
       }
     });
@@ -181,7 +216,12 @@ async function downloadPdf() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "file.pdf";
+      const filename = document.getElementById("filename").value;
+      if (filename !== "") {
+        a.download = document.getElementById("filename").value + (filename.endsWith('.pdf') ? "" : ".pdf");
+      } else {
+        a.download = "file.pdf";
+      }
       document.body.appendChild(a);
       a.click();
       URL.revokeObjectURL(url);
@@ -212,7 +252,7 @@ window.onload = (() => {
 
         for (let page of pdf) {
           for (const key in page) {
-            const element = await createElement(key, page[key].options, page[key].label, page[key].jpgData || page[key].pngData, page[key].selected, page[key]);
+            const element = await createElement(key, page[key].options, page[key].label, page[key].jpgData || page[key].pngData, page[key].selected);
             canvas.appendChild(element);
           }
         }

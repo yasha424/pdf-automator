@@ -29,6 +29,7 @@ body {
   background-color: rgba(255, 0, 0, 0.08);
   backdrop-filter: blur(10px);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  z-index: 100;
 }
 
 .topnav img {
@@ -40,6 +41,11 @@ body {
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
   background-color: white;
   padding: 5px;
+  transition: all .15s ease-in-out;
+}
+
+.topnav img:hover {
+  transform: scale(1.05);
 }
 
 .active {
@@ -67,17 +73,20 @@ body {
 }
 
 .topnav a.icon {
-  background: #262626;
+  background: #262626e0;
   display: block;
   position: absolute;
   right: 0;
   top: 0;
   border-radius: 15px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  transition: all .15s ease-in-out;
 }
 
 .topnav a.icon:hover {
   cursor: pointer;
+  background-color: #262626;
+  transform: scale(1.05);
 }
 
 .topnav #myLinks div {

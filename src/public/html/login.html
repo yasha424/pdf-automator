@@ -4,27 +4,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HTML Login Form</title>
+  <title>Логін</title>
   <link rel="stylesheet" href="/css/login.css">
 </head>
 
 <body>
   <div class="main">
-    <h1>PDF Configurator</h1>
-    <h3>Enter your login credentials</h3>
+    <h1>PDF-Editor</h1>
+    <h3>Введіть свої дані</h3>
     <form action="/api/login">
       <input type="text" id="email" name="email" placeholder="Email" required>
 
-      <input type="password" id="password" name="password" placeholder="Password" required>
+      <input type="password" id="password" name="password" placeholder="Пароль" required>
 
       <div class="wrap">
         <button type="submit">
-          Login
+          Логін
         </button>
       </div>
     </form>
-    <a href="/html/register.html" style="text-decoration: none;">
-      Create an account
+    <a href="/register" style="text-decoration: none;">
+      Створити акаунт
     </a>
   </div>
   <div id="alert">Alert</div>

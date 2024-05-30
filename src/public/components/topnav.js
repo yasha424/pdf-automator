@@ -11,9 +11,8 @@ class Topnav extends HTMLElement {
         <a href="#profile" id="email"></a>
         <a href="#profile" id="name"></a>
       </div>
-      <div><a href="#contact">Contact</a></div>
-      <div><a href="#about">About</a></div>
-      <div><a onclick="logout()">Logout</a></div>
+      <div><a href="#contact">Контакти</a></div>
+      <div><a onclick="logout()">Вийти з акаунту</a></div>
     </div>
     <a class="icon" onclick="toggleTopnav()">
       <i class="fa fa-bars"></i>

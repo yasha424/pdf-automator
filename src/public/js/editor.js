@@ -1,9 +1,9 @@
 function Uint8ToBase64(u8Arr) {
-  var CHUNK_SIZE = 0x8000;
-  var index = 0;
-  var length = u8Arr.length;
-  var result = '';
-  var slice;
+  const CHUNK_SIZE = 0x8000;
+  let index = 0;
+  const length = u8Arr.length;
+  let result = '';
+  let slice;
   while (index < length) {
     slice = u8Arr.subarray(index, Math.min(index + CHUNK_SIZE, length));
     result += String.fromCharCode.apply(null, slice);
@@ -21,6 +21,14 @@ const canvas = document.getElementById("canvas");
 const propertySidebar = document.getElementById("property-sidebar");
 let selectedTarget;
 let changed = false;
+const elementTypes = {
+  "text": "Текст",
+  "textField": "Текстове Поле",
+  "box": "Прямокутник",
+  "image": "Картинка",
+  "checkBox": "Прапорець",
+  "radioButton": "Радіокнопка",
+};
 
 document.addEventListener("DOMContentLoaded", function () {
   let draggedElement = null;
@@ -91,64 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
     element.appendChild(deleteButton);
 
-    if (type === "table") {
-      const table = document.createElement("div");
-      table.classList.add("table");
-      table.setAttribute("contenteditable", "true");
-
-      let rows = [];
-      let columns = [];
-
-      for (let i = 0; i < 2; i++) {
-        const row = document.createElement("tr");
-        for (let j = 0; j < 2; j++) {
-          const column = document.createElement("td");
-          column.innerText = i + ", " + j;
-          columns.push(column);
-          row.appendChild(column);
-        }
-        table.appendChild(row);
-        rows.push(row);
-      }
-
-      element.appendChild(table);
-
-      const handler = document.createElement("div");
-      handler.classList.add("resize-handle");
-
-      let clicked = false;
-      let startX, startY, startWidth, startHeight;
-
-      handler.addEventListener("mousedown", function (event) {
-        clicked = true;
-        startX = event.pageX;
-        startWidth = table.offsetWidth;
-        startY = event.pageY;
-        startHeight = table.offsetHeight;
-      });
-
-      document.addEventListener("mousemove", function (event) {
-        if (!clicked) return;
-        const newWidth = startWidth + (event.pageX - startX);
-        const newHeight = startHeight + (event.pageY - startY);
-        table.style.width = newWidth + "px";
-        table.style.height = newHeight + "px";
-
-        for (let row of rows) {
-          row.style.height = (newHeight / rows.length) + "px";
-        }
-
-        for (let column of columns) {
-          column.style.width = (newWidth / (columns.length / rows.length)) + "px";
-        }
-      });
-
-      handler.addEventListener("mouseup", function (event) {
-        clicked = false;
-      });
-
-      element.appendChild(handler);
-    } else if (type === "textField") {
+    if (type === "textField") {
       const text = document.createElement("div");
       text.classList.add("text-field");
       text.classList.add("text-editable");
@@ -198,9 +149,25 @@ document.addEventListener("DOMContentLoaded", function () {
       imagePicker.accept = "image/png, image/jpeg";
       imagePicker.addEventListener("change", () => {
         if (imagePicker.files.length !== 0) {
-          image.src = URL.createObjectURL(imagePicker.files[0]);
+          console.log(imagePicker.files[0].size);
+          if (imagePicker.files[0].size < 1024 * 1024 * 5) {
+            image.src = URL.createObjectURL(imagePicker.files[0]);
+          } else {
+            toggleAlert("Maximum image size is 5MB.", "red");
+          }
         }
       });
+
+      image.onload = () => {
+        imageContainer.aspectRatio = image.naturalWidth / image.naturalHeight;
+        if (image.naturalWidth > 790) {
+          imageContainer.style.width = 790 + "px";
+          imageContainer.style.height = (790 / imageContainer.aspectRatio) + "px";
+        } else {
+          imageContainer.style.width = image.naturalWidth + "px";
+          imageContainer.style.height = image.naturalHeight + "px";
+        }
+      };
 
       imageContainer.appendChild(imagePicker);
       element.appendChild(imageContainer);
@@ -284,6 +251,9 @@ document.addEventListener("DOMContentLoaded", function () {
       element.appendChild(handler);
     }
 
+    selectedTarget = element;
+    showElementProperties(selectedTarget);
+
     return element;
   }
 });
@@ -291,12 +261,11 @@ document.addEventListener("DOMContentLoaded", function () {
 canvas.addEventListener("click", function (event) {
   if (selectedTarget && selectedTarget.childNodes[1]) {
     hideElementProperties();
-    // selectedTarget.childNodes[1].style.border = "none";
   }
 
   if (event.target.classList.contains("element")) {
     selectedTarget = event.target;
-    showElementProperties(event.target);
+    showElementProperties(selectedTarget);
   }
 });
 
@@ -304,29 +273,148 @@ function showElementProperties(element) {
   const properties = getElementProperties(element);
 
   propertySidebar.innerHTML = "";
+
+  if (["box", "textField", "checkBox", "radioButton"].includes(properties.Type)) {
+    const propertyDiv = document.createElement("div");
+    propertyDiv.id = "property-div";
+    propertyDiv.innerHTML = '<strong>Назва:</strong>';
+    propertyDiv.style.display = "flex";
+    const nameInput = document.createElement("input");
+    nameInput.classList.add("name-input");
+    nameInput.placeholder = "Назва поля";
+    nameInput.value = element.childNodes[1].name || "";
+
+    nameInput.oninput = () => { 
+      changed = true;
+      element.childNodes[1].name = nameInput.value;
+    };
+
+    propertyDiv.appendChild(nameInput);
+    propertySidebar.appendChild(propertyDiv);
+  }
+
   for (const [key, value] of Object.entries(properties)) {
     const propertyDiv = document.createElement("div");
     propertyDiv.id = "property-div";
-    propertyDiv.innerHTML = `<strong>${key}:</strong> ${value}`;
+    propertyDiv.innerHTML = `<strong>Тип:</strong> ${elementTypes[value]}`;
     propertySidebar.appendChild(propertyDiv);
+  }
+  
+  const propertyDiv = document.createElement("div");
+  propertyDiv.id = "position-property-div";
+  propertyDiv.classList.add("position-property");
+  
+  propertyDiv.innerHTML = `<strong>X: </strong>`;
+  const xInput = document.createElement("input");
+  xInput.type = "number";
+  xInput.max = 780;
+  xInput.value = parseFloat(element.style.left);
+  const yLabel = document.createElement("strong");
+  yLabel.innerText = " Y: ";  
+  const yInput = document.createElement("input");
+  yInput.type = "number";
+  yInput.max = 1100;
+  yInput.value = parseFloat(element.style.top) + 32;
+
+  xInput.onchange = () => {
+    xInput.value = xInput.value > 780 ? 780 : xInput.value;
+    element.style.left = xInput.value + "px";
+  };
+  yInput.onchange = () => {
+    yInput.value = yInput.value > 1100 ? 1100 : yInput.value;
+    element.style.top = yInput.value - 32 + "px";
+  };
+  
+  propertyDiv.appendChild(xInput);
+  propertyDiv.appendChild(yLabel);
+  propertyDiv.appendChild(yInput);
+  
+  propertySidebar.appendChild(propertyDiv);
+
+  if (properties.Type === "image") {
+    const propertyDiv = document.createElement("div");
+    propertyDiv.id = "property-div";
+    propertyDiv.innerHTML = "<strong>Зберігати відношення:</strong>";
+    keepAspectRatioButton = document.createElement("input");
+    keepAspectRatioButton.type = "checkbox";
+    keepAspectRatioButton.checked = element.childNodes[1].keepAspectRatio || false;
+    keepAspectRatioButton.name = "keepAspectRatioButton";
+    keepAspectRatioButton.classList.add("aspect-button");
+    keepAspectRatioButton.onchange = () => {
+      element.childNodes[1].keepAspectRatio = keepAspectRatioButton.checked;
+      if (keepAspectRatioButton.checked) {
+        element.childNodes[1].oldHeight = element.childNodes[1].style.height;
+        element.childNodes[1].style.height = parseFloat(element.childNodes[1].style.width) / element.childNodes[1].aspectRatio + "px";
+      } else {
+        element.childNodes[1].style.height = element.childNodes[1].oldHeight;
+      }
+    };
+    propertyDiv.appendChild(keepAspectRatioButton);
+    propertySidebar.appendChild(propertyDiv);
+
+
+    const widthDiv = document.createElement("div");
+    widthDiv.id = "size-property-div";
+    widthDiv.classList.add("size-property");
+    
+    widthDiv.innerHTML = `<strong>Ширина: </strong>`;
+    const widthInput = document.createElement("input");
+    const heightInput = document.createElement("input");
+    widthInput.type = "number";
+    widthInput.max = 780;
+    widthInput.value = parseFloat(element.childNodes[1].style.width);
+    widthInput.onchange = () => {
+      widthInput.value = widthInput.value > 780 ? 780 : (widthInput.value < 20 ? 20 : widthInput.value);
+      element.childNodes[1].style.width = widthInput.value + "px";
+      if (keepAspectRatioButton.checked) {
+        heightInput.value = widthInput.value * element.childNodes[1].aspectRatio;
+        element.childNodes[1].style.height = heightInput.value + "px";
+      }
+    };
+    
+    widthDiv.appendChild(widthInput);
+    propertySidebar.appendChild(widthDiv);
+
+    const heightDiv = document.createElement("div");
+    heightDiv.id = "size-property-div";
+    heightDiv.classList.add("size-property");
+    
+    heightDiv.innerHTML = `<strong>Висота: </strong>`;
+    heightInput.type = "number";
+    heightInput.max = 1100;
+    heightInput.value = parseFloat(element.childNodes[1].style.height);
+    heightInput.onchange = () => {
+      heightInput.value = heightInput.value > 1100 ? 1100 : (heightInput.value < 20 ? 20 : heightInput.value);
+      element.childNodes[1].style.height = heightInput.value + "px";
+      if (keepAspectRatioButton.checked) {
+        widthInput.value = heightInput.value * element.childNodes[1].aspectRatio;
+        element.childNodes[1].style.width = widthInput.value + "px";
+      }
+    };
+    
+    heightDiv.appendChild(heightInput);
+    propertySidebar.appendChild(heightDiv);
+
   }
 
   if (["box", "textField"].includes(properties.Type)) {
     const propertyDiv = document.createElement("div");
     propertyDiv.id = "property-div";
-    propertyDiv.innerHTML = '<strong>Border:</strong> ';
+    propertyDiv.innerHTML = '<strong>Ширина рамки:</strong> ';
     const borderInput = document.createElement("input");
     borderInput.type = "number";
     borderInput.min = 0; borderInput.max = 8; 
-    console.log(element.childNodes[1].style.border);
     borderInput.value = parseInt(element.childNodes[1].style.border) || 0;
     borderInput.onchange = () => { 
+      changed = true;
       element.childNodes[1].style.border = `${borderInput.value}px solid black`;
     };
     propertyDiv.appendChild(borderInput);
     propertySidebar.appendChild(propertyDiv);
   }
 }
+
+
 
 function hideElementProperties() {
   propertySidebar.innerHTML = "";
@@ -365,9 +453,14 @@ function addListener(handler, clicked, startX, startY, startWidth, startHeight, 
     if (clicked !== true) return;
     changed = true;
     const newWidth = startWidth + (event.pageX - startX);
-    const newHeight = startHeight + (event.pageY - startY);
-    element.style.width = newWidth + "px";
-    element.style.height = newHeight + "px";
+    let newHeight;
+    if (element.keepAspectRatio === true) {
+      newHeight = newWidth / (element.aspectRatio ? element.aspectRatio : 1);
+    } else {
+      newHeight = startHeight + (event.pageY - startY);
+    }
+    element.style.width = (newWidth > 20 ? newWidth : 20) + "px";
+    element.style.height = (newHeight > 20 ? newHeight : 20) + "px";
   });
 
   document.addEventListener("mouseup", function (event) {
