@@ -18,7 +18,12 @@ router.get('/register', async (req: Request, res: Response) => {
       if (!user) {
         DataBase.shared.insert('users', 'firstName, lastName, email, password', `"${first}", "${last}", "${email}", "${hashedPassword}"`, (err) => {
           if (err == null) {
-            return res.redirect('/main' + `?email=${email}&lastName=${last}&firstName=${first}`);
+            res.cookie('email', email, { maxAge: 60 * 60 * 1000 });
+            res.cookie('firstName', first, { maxAge: 60 * 60 * 1000 });
+            res.cookie('lastName', last, { maxAge: 60 * 60 * 1000 });
+            res.cookie('admin', false, { maxAge: 60 * 60 * 1000 });
+    
+            return res.redirect('/main');
           }
           return res.redirect('/register?errCode=401');
         });    
@@ -52,7 +57,12 @@ router.get('/login', async (req: Request, res: Response) => {
       const isPasswordValid = timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
 
       if (isPasswordValid) {
-        return res.redirect(`/main?email=${user.email}&firstName=${user.firstName}&lastName=${user.lastName}&admin=${user.admin}`);
+        res.cookie('email', user.email, { maxAge: 60 * 60 * 1000 });
+        res.cookie('firstName', user.firstName, { maxAge: 60 * 60 * 1000 });
+        res.cookie('lastName', user.lastName, { maxAge: 60 * 60 * 1000 });
+        res.cookie('admin', user.admin, { maxAge: 60 * 60 * 1000 });
+
+        return res.redirect('/main');
       }
       return res.redirect('/login?errCode=402');
     } 

@@ -33,25 +33,34 @@
   <div id="alert">Alert</div>
 </body>
 <script>
+  document.onclick = (e) => {
+    closeTopnav();
+    if (e.target.id === "fillFormDiv") {
+      closeFillForm();
+    }
+  }
+
+  function closeTopnav() {
+    const menu = document.getElementById("myLinks");
+    if (menu.style.display === "block") {
+      menu.style.display = 'none';
+    }
+  }
+
+  function getCookie(name) {
+    return decodeURIComponent(document.cookie)
+      .split("; ")
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split("=")[1];
+  }
+
   const queryString = window.location.search;
   const urlParams = new URLSearchParams(queryString);
 
-  let email = urlParams.get('email');
-  let firstName = urlParams.get('firstName');
-  let lastName = urlParams.get('lastName');
-  let admin = urlParams.get('admin');
-
-  if (email != null && firstName != null && lastName != null) {
-    localStorage.setItem('email', email);
-    localStorage.setItem('firstName', firstName);
-    localStorage.setItem('lastName', lastName);
-    localStorage.setItem('admin', admin);
-  } else {
-    email = localStorage.getItem('email');
-    firstName = localStorage.getItem('firstName');
-    lastName = localStorage.getItem('lastName');
-    admin = localStorage.getItem('admin');
-  }
+  let email = getCookie('email');
+  let firstName = getCookie('firstName');
+  let lastName = getCookie('lastName');
+  let admin = getCookie('admin');
 
   fetch(`/api/pdf-templates/${email}`, {
     method: "GET",
@@ -63,7 +72,7 @@
     .then(json => {
       const pdfList = document.getElementById("template-list");
 
-      for (let item of json) {
+      for (let item of json.reverse()) {
         insertPdfInto(pdfList, item, true, false);
       }
     });
@@ -176,6 +185,10 @@
     pdfItem.appendChild(info);
     element.appendChild(pdfItem)
   }
+
+  // function closeMenu() {
+  //   document
+  // }
 
   function closeFillForm() {
     document.getElementById("fillForm").style.display = "none";
@@ -292,7 +305,7 @@
       const emails = emailInput.value.split(',').map((value) => value.trim());
       let pdfFillData = { pdf: getPdfFillData(list) };
       pdfFillData.emails = emails;
-      console.log(pdfFillData);
+
       fetch('/api/fill-pdf/' + pdfId, {
         method: "POST",
         headers: {
@@ -302,10 +315,7 @@
       })
         .then(res => res.json())
         .then(json => {
-          console.log(json.status);
           if (json.status === 404) {
-            console.log(json.status);
-
             toggleAlert('There was an error sending PDF.', 'red');
           } else if (json.status === 200) {
             toggleAlert('PDF sent successfully.', 'green');

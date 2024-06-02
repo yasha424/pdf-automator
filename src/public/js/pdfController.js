@@ -6,9 +6,10 @@ function getTextElement(item, children) {
     text: {
       label: children.innerText,
       options: {
-        x: (parseInt(item.style.left) / 1.34),
-        y: (parseInt(item.style.top) / 1.34) + 28,
-        size: 12, width: width, height: height
+        x: parseInt(item.style.left) / 1.34,
+        y: parseInt(item.style.top) / 1.34 + 23.880597014925371,
+        size: 12, width: width, height: height,
+        alignment: item.style.textAlign || "left"
       }
     }
   };
@@ -22,12 +23,13 @@ function getTextFieldElement(item, children) {
 
   element = {
     textField: {
-      name: children.name,
+      name: children.name || makeid(8),
       label: children.innerText,
       options: {
         x: parseInt(item.style.left) / 1.34,
-        y: parseInt(item.style.top) / 1.35 + 20,
-        width: width, height: height, borderWidth: border
+        y: parseInt(item.style.top) / 1.34 + 23.880597014925371,
+        width: width, height: height, borderWidth: border,
+        alignment: item.style.textAlign || "left"
       }
     }
   };
@@ -43,7 +45,7 @@ function getBoxElement(item, children) {
     box: {
       options: {
         x: parseInt(item.style.left) / 1.34,
-        y: parseInt(item.style.top) / 1.35 + 20,
+        y: parseInt(item.style.top) / 1.34 + 23.880597014925371,
         width: width, height: height, borderWidth: border
       }
     }
@@ -57,10 +59,10 @@ function getCheckBoxElement(item, children) {
 
   element = {
     checkBox: {
-      name: children.name,
+      name: children.name || makeid(8),
       options: {
         x: parseInt(item.style.left) / 1.34,
-        y: parseInt(item.style.top) / 1.35 + 20,
+        y: parseInt(item.style.top) / 1.34 + 23.880597014925371,
         width: width, height: height
       },
       selected: children.childNodes.length !== 0
@@ -84,15 +86,20 @@ async function getImageElement(item, children) {
       image: {
         options: {
           x: parseInt(item.style.left) / 1.34,
-          y: parseInt(item.style.top) / 1.35 + 20,
+          y: parseInt(item.style.top) / 1.34 + 23.880597014925371,
           width: width, height: height
         }
       }
     }
-    if (children.childNodes[1].files.length === 0) {
-      element.image.jpgData = b64
+
+    if (image.imageType == "png") {
+      element.image.pngData = b64;
+      return element;
+    } else if (image.imageType == "jpeg") {
+      element.image.jpgData = b64;
       return element;
     }
+
     if (children.childNodes[1].files[0].type === "image/jpeg") {
       element.image.jpgData = b64
     } else if (children.childNodes[1].files[0].type === "image/png") {
@@ -108,13 +115,13 @@ function getRadioButtonElement(item, children) {
 
   element = {
     radioGroup: {
-      name: children.name,
+      name: children.name || makeid(8),
       options: [
         {
           label: makeid(16),
           options: {
             x: parseInt(item.style.left) / 1.34,
-            y: parseInt(item.style.top) / 1.35 + 20,
+            y: parseInt(item.style.top) / 1.34 + 23.880597014925371,
             width: width, height: height
           },
           selected: children.childNodes.length !== 0
@@ -159,10 +166,17 @@ async function getPdfElements() {
   return pdf;
 }
 
+function getCookie(name) {
+  return decodeURIComponent(document.cookie)
+    .split("; ")
+    .find((row) => row.startsWith(`${name}=`))
+    ?.split("=")[1];
+}
+
 async function saveTemplate() {
   const pdf = await getPdfElements();
 
-  const email = localStorage.getItem('email');
+  const email = getCookie('email');
   const filename = document.getElementById("filename").value;
 
   fetch("/api/save-pdf", {
@@ -176,7 +190,9 @@ async function saveTemplate() {
     .then(json => {
       if (json.status === 200) {
         changed = false;
-        toggleAlert("PDF succesfully saved.", "green");
+        toggleAlert("PDF успішно збережено.", "green");
+      } else {
+        toggleAlert(json.message, "red");
       }
     });
 }
@@ -235,9 +251,6 @@ window.onload = (() => {
   const id = urlParams.get('id');
   const defaultId = urlParams.get('defaultId');
 
-  if (localStorage.getItem('admin') != 1) {
-    document.getElementById('saveDefaultButton').remove();
-  }
 
   if (id) {
     fetch("/api/pdf-template/" + id, {
@@ -249,10 +262,10 @@ window.onload = (() => {
       .then(response => response.json())
       .then(async json => {
         const pdf = JSON.parse(json.pdf);
-
         for (let page of pdf) {
           for (const key in page) {
-            const element = await createElement(key, page[key].options, page[key].label, page[key].jpgData || page[key].pngData, page[key].selected);
+            const element = await createElement(key, page[key].options, page[key].label, page[key].jpgData || page[key].pngData, page[key].selected, page[key].jpgData != undefined);
+            element.childNodes[1].name = page[key].name;
             canvas.appendChild(element);
           }
         }
@@ -272,7 +285,8 @@ window.onload = (() => {
 
         for (let page of pdf) {
           for (const key in page) {
-            const element = await createElement(key, page[key].options, page[key].label, page[key].jpgData || page[key].pngData, page[key].selected);
+            const element = await createElement(key, page[key].options, page[key].label, page[key].jpgData || page[key].pngData, page[key].selected, page[key].jpgData != undefined);
+            element.childNodes[1].name = page[key].name;
             canvas.appendChild(element);
           }
         }
@@ -282,9 +296,21 @@ window.onload = (() => {
   }
 
   setParams();
+
+  removeButtons();
 });
 
-async function createElement(type, options, label, imageData, selected) {
+function removeButtons() {
+  if (getCookie('admin') != true) {
+    document.getElementById('saveDefaultButton').remove();
+  }
+  if (!getCookie('email')) {
+    document.getElementById('shareButton').remove();
+    document.getElementById('saveButton').remove();
+  }
+}
+
+async function createElement(type, options, label, imageData, selected, isJpeg) {
   const element = document.createElement("div");
   element.style.userSelect = "none";
   element.style.position = "absolute";
@@ -302,8 +328,8 @@ async function createElement(type, options, label, imageData, selected) {
   element.appendChild(deleteButton);
 
   const rect = canvas.getBoundingClientRect();
-  element.style.top = `${(options.y + rect.top + window.scrollY) * 1.35 - 146}px`;
-  element.style.left = `${(options.x + rect.left + window.scrollX) * 1.34 - 468}px`;
+  element.style.top = `${(options.y) * 1.34 - 32}px`;
+  element.style.left = `${options.x * 1.34}px`;
 
   if (type === "box") {
     const box = document.createElement("div");
@@ -329,6 +355,7 @@ async function createElement(type, options, label, imageData, selected) {
     text.style.height = options.height * 1.34 + "px";
     text.contentEditable = true;
     text.innerText = label;
+    element.style.textAlign = options.alignment;
     element.appendChild(text);
 
     const handler = document.createElement("div");
@@ -348,6 +375,7 @@ async function createElement(type, options, label, imageData, selected) {
     textField.style.border = `${options.borderWidth || 1}px solid black`
     textField.innerText = label;
     textField.contentEditable = true;
+    element.style.textAlign = options.alignment;
     element.appendChild(textField);
 
     const handler = document.createElement("div");
@@ -367,6 +395,7 @@ async function createElement(type, options, label, imageData, selected) {
 
     const image = document.createElement("img");
     image.src = `data:image/png;base64, ${imageData}`;
+    image.imageType = isJpeg ? "jpeg" : "png";
     imageContainer.appendChild(image);
 
     const imagePicker = document.createElement("input");
@@ -424,7 +453,7 @@ async function createElement(type, options, label, imageData, selected) {
 
     element.appendChild(handler);
   } else if (type === "radioGroup") {
-  
+
     for (const option of options) {
       element.style.top = `${(option.options.y + rect.top + window.scrollY) * 1.35 - 146}px`;
       element.style.left = `${(option.options.x + rect.left + window.scrollX) * 1.34 - 468}px`;
@@ -433,7 +462,7 @@ async function createElement(type, options, label, imageData, selected) {
       radioGroupContainer.classList.add("radio-button-container");
       radioGroupContainer.style.width = `${option.options.width * 1.34}px`;
       radioGroupContainer.style.height = `${option.options.height * 1.34}px`;
-    
+
       radioGroupContainer.onclick = () => {
         if (radioGroupContainer.childElementCount === 0) {
           const checkBox = document.createElement("img");
@@ -449,7 +478,7 @@ async function createElement(type, options, label, imageData, selected) {
       if (option.selected === true) {
         radioGroupContainer.click();
       }
-  
+
       element.appendChild(radioGroupContainer);
       const handler = document.createElement("div");
       handler.classList.add("resize-handle");

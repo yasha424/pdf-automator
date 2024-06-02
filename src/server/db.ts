@@ -4,12 +4,13 @@ import fs from 'fs';
 class DataBase {
   static readonly shared = new DataBase();
   private db: Database;
- 
+
   private constructor() {
     const dir = __dirname + '/../tmp';
+
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir);
-    }  
+    }
 
     this.db = new Database(__dirname + '/../tmp/db.sqlite');
     this.createPdfTemplateTable();
@@ -27,7 +28,7 @@ class DataBase {
       admin BOOLEAN NOT NULL DEFAULT FALSE
     )`);
   }
-  
+
   private createPdfTemplateTable() {
     this.db.exec(`CREATE TABLE IF NOT EXISTS pdfTemplates (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +38,7 @@ class DataBase {
       FOREIGN KEY(userEmail) REFERENCES users(email)
     )`);
   }
-  
+
   private createDefaultPdfsTable() {
     this.db.exec(`CREATE TABLE IF NOT EXISTS deafultPdfs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,11 +48,7 @@ class DataBase {
   }
 
   insert(table: string, propetries: string, values: string, callback?: (err: Error | null) => void) {
-    if (this.validateValues(values)) {
-      this.db.run(`INSERT INTO ${table} (${propetries}) VALUES (${values})`, callback);
-    } else {
-      callback?.(new Error('Invalid values'));
-    }
+    this.db.run(`INSERT INTO ${table} (${propetries}) VALUES(${values.split(', ').map(() => { return '?' })})`, values.split(', '), callback);
   }
 
   get(table: string, propetries: string[], where?: string[], equals?: any[], callback?: (err: Error | null, result: any) => void) {
@@ -65,8 +62,8 @@ class DataBase {
         }
       }
     }
-    
-    this.db.get(request, equals, (err, result: any) => {      
+
+    this.db.get(request, equals, (err, result: any) => {
       callback?.(err, result);
     });
   }
@@ -82,7 +79,7 @@ class DataBase {
         }
       }
     }
-    
+        
     this.db.all(request, equals, (err, results: any[]) => {
       callback?.(err, results);
     });
@@ -126,13 +123,10 @@ class DataBase {
         }
       }
     }
-    
+
     this.db.run(request, data, callback);
   }
 
-  private validateValues(values: string): boolean {
-    return true;
-  }
 }
 
 export { DataBase };

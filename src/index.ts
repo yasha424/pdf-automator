@@ -1,9 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import { pdfRouter } from './server/pdfRouter';
 import { loginRouter } from './server/login';
-import path from "path";
-import fs from "fs";
-import https from 'https';
+import cookieParser from 'cookie-parser';
 
 const app: Express = express();
 const port = process.env.PORT || 3000;
@@ -11,13 +9,13 @@ const port = process.env.PORT || 3000;
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({extended: true}));
 app.use(express.static(__dirname + "/public"));
+app.use(cookieParser());
 
 app.use('/api', pdfRouter);
 app.use('/api', loginRouter);
 
-
 app.get('/', (req: Request, res: Response) => {
-  res.redirect('/login');
+  res.redirect('/main');
 });
 app.get('/login', (req: Request, res: Response) => {
   res.sendFile(__dirname + '/public/html/login.html');

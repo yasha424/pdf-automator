@@ -149,7 +149,6 @@ document.addEventListener("DOMContentLoaded", function () {
       imagePicker.accept = "image/png, image/jpeg";
       imagePicker.addEventListener("change", () => {
         if (imagePicker.files.length !== 0) {
-          console.log(imagePicker.files[0].size);
           if (imagePicker.files[0].size < 1024 * 1024 * 5) {
             image.src = URL.createObjectURL(imagePicker.files[0]);
           } else {
@@ -266,6 +265,9 @@ canvas.addEventListener("click", function (event) {
   if (event.target.classList.contains("element")) {
     selectedTarget = event.target;
     showElementProperties(selectedTarget);
+  } else if (event.target.parentNode.classList.contains("element")) {
+    selectedTarget = event.target.parentNode;
+    showElementProperties(selectedTarget);
   }
 });
 
@@ -274,7 +276,7 @@ function showElementProperties(element) {
 
   propertySidebar.innerHTML = "";
 
-  if (["box", "textField", "checkBox", "radioButton"].includes(properties.Type)) {
+  if (["textField", "checkBox", "radioButton"].includes(properties.Type)) {
     const propertyDiv = document.createElement("div");
     propertyDiv.id = "property-div";
     propertyDiv.innerHTML = '<strong>Назва:</strong>';
@@ -352,7 +354,9 @@ function showElementProperties(element) {
     propertyDiv.appendChild(keepAspectRatioButton);
     propertySidebar.appendChild(propertyDiv);
 
+  }
 
+  if (true) {
     const widthDiv = document.createElement("div");
     widthDiv.id = "size-property-div";
     widthDiv.classList.add("size-property");
@@ -361,11 +365,11 @@ function showElementProperties(element) {
     const widthInput = document.createElement("input");
     const heightInput = document.createElement("input");
     widthInput.type = "number";
-    widthInput.max = 780;
+    widthInput.max = 797;
     widthInput.value = parseFloat(element.childNodes[1].style.width);
     widthInput.onchange = () => {
-      if (widthInput.value > 780) {
-        widthInput.value = 780
+      if (widthInput.value > 797) {
+        widthInput.value = 797
       } else {
         widthInput.value = widthInput.value < 20 ? 20 : widthInput.value;
       }
@@ -385,11 +389,11 @@ function showElementProperties(element) {
     
     heightDiv.innerHTML = `<strong>Висота: </strong>`;
     heightInput.type = "number";
-    heightInput.max = 1100;
+    heightInput.max = 1126;
     heightInput.value = parseFloat(element.childNodes[1].style.height);
     heightInput.onchange = () => {
-      if (heightInput.value > 1100) {
-        heightInput.value = 1100;
+      if (heightInput.value > 1126) {
+        heightInput.value = 1126;
       } else {
         heightInput.value = heightInput.value < 20 ? 20 : heightInput.value;
       }
@@ -418,6 +422,35 @@ function showElementProperties(element) {
       element.childNodes[1].style.border = `${borderInput.value}px solid black`;
     };
     propertyDiv.appendChild(borderInput);
+    propertySidebar.appendChild(propertyDiv);
+  }
+
+  if (["text", "textField"].includes(properties.Type)) {
+    const propertyDiv = document.createElement("div");
+    propertyDiv.classList.add('alignment-input');
+
+    for (let alignment of ['left', 'center', 'right']) {
+      const label = document.createElement('label');
+      
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = 'textAlignment';
+      if (alignment === element.style.textAlign) {
+        input.checked = true;
+      }
+
+      input.onchange = () => {
+        element.style.textAlign = alignment;
+      };
+      
+      const image = document.createElement('img');
+      image.src = `/images/text.align${alignment}.png`;
+
+      label.appendChild(input);
+      label.appendChild(image);
+
+      propertyDiv.appendChild(label);
+    }
     propertySidebar.appendChild(propertyDiv);
   }
 }

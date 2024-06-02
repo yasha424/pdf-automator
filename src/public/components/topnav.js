@@ -7,14 +7,14 @@ class Topnav extends HTMLElement {
   <div class="topnav">
     <div class="active" id="home-link"><a id="logo" href="/main"><img src="/images/logo.png"></a><h3 class="logo-text" id="logoText">PDF-Editor</h3></div>
     <div id="myLinks">
-      <div href="#profile">
+      <div href="#profile" id="user">
         <a href="#profile" id="email"></a>
         <a href="#profile" id="name"></a>
       </div>
       <div><a href="#contact">Контакти</a></div>
-      <div><a onclick="logout()">Вийти з акаунту</a></div>
+      <div><a onclick="logout()" id="logout">Вийти з акаунту</a></div>
     </div>
-    <a class="icon" onclick="toggleTopnav()">
+    <a class="icon" id="icon">
       <i class="fa fa-bars"></i>
     </a>
   </div>
@@ -22,13 +22,38 @@ class Topnav extends HTMLElement {
   } 
 }
 
-function setParams() {
-  const email = localStorage.getItem('email');
-  const firstName = localStorage.getItem('firstName');
-  const lastName = localStorage.getItem('lastName');
+function getCookie(name) {
+  return decodeURIComponent(document.cookie)
+    .split("; ")
+    .find((row) => row.startsWith(`${name}=`))
+    ?.split("=")[1];
+}
 
-  document.getElementById('email').innerText = email;
-  document.getElementById('name').innerText = firstName + " " + lastName;
+function setParams() {
+  let icon = document.getElementById("icon");
+  icon.onclick = (e) => {
+    let menu = document.getElementById("myLinks");
+    if (menu.style.display === "block") {
+      menu.style.display = "none";
+    } else {
+      menu.style.display = "block";
+    }
+    e.stopPropagation();
+  
+  };
+
+  const email = getCookie('email');
+  const firstName = getCookie('firstName');
+  const lastName = getCookie('lastName');
+
+  if (email && firstName && lastName) {
+    document.getElementById('email').innerText = email;
+    document.getElementById('name').innerText = firstName + " " + lastName;
+  } else {
+    document.getElementById('user').remove();
+    const logoutLink = document.getElementById('logout');
+    logoutLink.innerText = "Увійти";
+  }
 
   const logoText = document.getElementById("logoText");
   logoText.onclick = (() => {
@@ -37,17 +62,16 @@ function setParams() {
 }
 
 function logout() {
-  localStorage.clear();
+  deleteAllCookies();
   window.location = '/login';
 }
 
-function toggleTopnav() {
-  let menu = document.getElementById("myLinks");
-  if (menu.style.display === "block") {
-    menu.style.display = "none";
-  } else {
-    menu.style.display = "block";
-  }
+function deleteAllCookies() {
+  document.cookie.split(';').forEach(cookie => {
+    const eqPos = cookie.indexOf('=');
+    const name = eqPos > -1 ? cookie.substring(0, eqPos) : cookie;
+    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  });
 }
 
 window.onload = setParams;

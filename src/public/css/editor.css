@@ -290,3 +290,29 @@ th, td {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   font-size: 0.8rem;
 }
+
+.alignment-input [type=radio] { 
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.alignment-input [type=radio] + img {
+  cursor: pointer;
+  width: 10px;
+  height: 10px;
+  background-color: black;
+  border-radius: 6px;
+  border: 6px solid black;
+  margin: 0 4px;
+}
+
+.alignment-input [type=radio]:checked + img {
+  background-color: rgb(92, 92, 92);
+  border: 6px solid rgb(92, 92, 92);
+}
+
+.alignment-input {
+  margin-left: -4px;
+}
