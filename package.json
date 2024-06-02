@@ -11,7 +11,7 @@
     "build": "npm run clean && tsc && npm run copy-files",
     "start": "node ./dist/src/index.js",
     "clean": "rimraf ./dist",
-    "local": "ts-node src",
+    "local": "ts-node src/index.ts",
     "local:watch": "nodemon ./src -e ts,json --exec 'npm run local'"
   },
   "author": "",
@@ -35,6 +35,8 @@
     "express": "^4.19.2",
     "https": "^1.0.0",
     "pdf-lib": "^1.17.1",
+    "pdf-ts": "^0.0.2",
+    "pdfjs-dist": "^4.3.136",
     "pdfkit-table-ts": "^0.0.14",
     "sqlite3": "^5.1.7"
   }

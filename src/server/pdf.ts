@@ -1,4 +1,4 @@
-import { PDFDocument, PDFFont, PDFForm, PDFDocument as PDFLib, PDFPage, TextAlignment, layoutMultilineText, rgb } from 'pdf-lib';
+import { PDFDocument, PDFFont, PDFForm, PDFPage, PDFTextField, TextAlignment, layoutMultilineText, rgb } from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit'
 import fs from 'fs';
 import { pathToFileURL } from 'url';
@@ -10,8 +10,48 @@ class PDF {
     this.fontBytes = fs.readFileSync(pathToFileURL('./src/public/fonts/Roboto-Regular.ttf'));
   }
 
+  async loadPdf(pdfData: Uint8Array): Promise<any[]> {
+    const pdfDoc = await PDFDocument.load(pdfData);
+    const pages = pdfDoc.getPages();
+    const form = pdfDoc.getForm();
+
+    let pdfJson: any[] | PromiseLike<any[]> = [];
+
+    form.getFields().forEach(field => {
+      if (field instanceof PDFTextField) {
+        pdfJson.push(this.getTextField(field, pages[0].getHeight()));
+      }
+    });
+
+
+    return pdfJson;
+  }
+
+  private getTextField(field: PDFTextField, height: number): any {
+    let options: any = field.acroField.getWidgets()[0].getRectangle();
+    options.y = height - options.y;
+    options.borderWidth = 1;
+    switch (field.getAlignment()) {
+      case TextAlignment.Center:
+        options.alignment = 'center'
+        break;
+      case TextAlignment.Right:
+        options.alignment = 'right'
+        break;          
+      default:
+        options.alignment = 'left'
+        break;
+    }
+
+    return { textField: {
+      name: field.getName(),
+      label: field.getText(),
+      options: options
+    }};
+  }
+
   async makePdf(pdf: any): Promise<Uint8Array> {
-    let pdfDoc = await PDFLib.create();
+    let pdfDoc = await PDFDocument.create();
     pdfDoc.registerFontkit(fontkit);
     const customFont = await pdfDoc.embedFont(this.fontBytes);
 

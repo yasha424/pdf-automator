@@ -16,6 +16,18 @@ class DataBase {
     this.createPdfTemplateTable();
     this.createUserTable();
     this.createDefaultPdfsTable();
+    this.createBlockedAddressesTable();
+
+    // this.getAll('pdfTemplates', ['*'], undefined, undefined, (err, rows) => {
+    //   console.log(rows);
+    // })
+  }
+
+  private createBlockedAddressesTable() {
+    this.db.exec(`CREATE TABLE IF NOT EXISTS blocked (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email VARCHAR(200) NOT NULL
+    )`);
   }
 
   private createUserTable() {
@@ -63,7 +75,7 @@ class DataBase {
       }
     }
 
-    this.db.get(request, equals, (err, result: any) => {
+    this.db.get(request, equals, (err: Error, result: any) => {
       callback?.(err, result);
     });
   }
@@ -80,7 +92,7 @@ class DataBase {
       }
     }
         
-    this.db.all(request, equals, (err, results: any[]) => {
+    this.db.all(request, equals, (err: Error, results: any[]) => {
       callback?.(err, results);
     });
   }

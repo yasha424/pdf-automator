@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Скарга</title>
+  <script src="/components/topnav.js" type="text/javascript" defer></script>
+  <link rel="stylesheet" href="/css/complaint.css">
+</head>
+
+<body>
+  <topnav-component></topnav-component>
+  <div class="form-div">
+    <form id="form">
+      <h3>Ви впевнені що хочете заблокувати свою пошту</h3>
+      <h2><strong id="emailLabel">123</strong></h2>
+      <h3>Після цього ви не зможете отримувати листи з PDF документами, відправлені з даного сервісу на власну пошту.</h3>
+      <div class="wrap">
+        <button type="submit">
+          Заблокувати
+        </button>
+      </div>
+    </form>
+  </div>
+</body>
+<script>
+  window.onload = () => {
+    setParams();
+
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const emailToBlock = atob(urlParams.get('email'));
+    document.getElementById('emailLabel').innerText = emailToBlock;
+    const form = document.getElementById('form');
+    form.action = '/api/block-email/' + emailToBlock;
+
+    if (urlParams.get('success') == true) {
+      form.innerHTML = '';
+      form.innerText = 'Пошта успішно заблокована.'
+    } else if (urlParams.get('success') == false) {
+      form.innerHTML = '';
+      form.innerText = 'Сталася помилка при блокуванні пошти.'
+    } else if (!getCookie('email') || getCookie('email') === emailToBlock) {
+      console.log(1);
+    } else {
+      form.innerHTML = '';
+      form.innerText = 'Ви не можете заблокувати дану пошту.'
+    }
+  };
+
+  function getCookie(name) {
+    return decodeURIComponent(document.cookie)
+      .split("; ")
+      .find((row) => row.startsWith(`${name}=`))
+      ?.split("=")[1];
+  }
+</script>
+
+</html>

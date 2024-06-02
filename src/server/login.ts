@@ -86,4 +86,19 @@ router.post('/change-privilege', async (req: Request, res: Response) => {
   }
 });
 
+router.get('/block-email/:email', async (req: Request, res: Response) => {
+  const email = req.params.email;
+  if (!email) {
+    return res.redirect('/complaint?success=0');
+  }
+
+  DataBase.shared.insert('blocked', 'email', email, (err) => {
+    if (err) {
+      return res.redirect('/complaint?success=0');
+    }
+    return res.redirect('/complaint?success=1');
+  })
+});
+
+
 export { router as loginRouter };

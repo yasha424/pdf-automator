@@ -94,7 +94,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const deleteButton = document.createElement("button");
     deleteButton.classList.add("delete-button");
-    deleteButton.onclick = () => {
+    deleteButton.onclick = (e) => {
+      hideElementProperties();
       element.remove();
     };
     element.appendChild(deleteButton);
@@ -265,7 +266,7 @@ canvas.addEventListener("click", function (event) {
   if (event.target.classList.contains("element")) {
     selectedTarget = event.target;
     showElementProperties(selectedTarget);
-  } else if (event.target.parentNode.classList.contains("element")) {
+  } else if (event.target.parentNode.classList.contains("element") && !event.target.classList.contains("delete-button")) {
     selectedTarget = event.target.parentNode;
     showElementProperties(selectedTarget);
   }
@@ -454,8 +455,6 @@ function showElementProperties(element) {
     propertySidebar.appendChild(propertyDiv);
   }
 }
-
-
 
 function hideElementProperties() {
   propertySidebar.innerHTML = "";

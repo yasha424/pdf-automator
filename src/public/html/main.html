@@ -186,10 +186,6 @@
     element.appendChild(pdfItem)
   }
 
-  // function closeMenu() {
-  //   document
-  // }
-
   function closeFillForm() {
     document.getElementById("fillForm").style.display = "none";
     document.getElementById("fillFormDiv").style.display = "none";
@@ -305,6 +301,7 @@
       const emails = emailInput.value.split(',').map((value) => value.trim());
       let pdfFillData = { pdf: getPdfFillData(list) };
       pdfFillData.emails = emails;
+      pdfFillData.from = getCookie('email');
 
       fetch('/api/fill-pdf/' + pdfId, {
         method: "POST",
@@ -315,11 +312,7 @@
       })
         .then(res => res.json())
         .then(json => {
-          if (json.status === 404) {
-            toggleAlert('There was an error sending PDF.', 'red');
-          } else if (json.status === 200) {
-            toggleAlert('PDF sent successfully.', 'green');
-          }
+          toggleAlert(json.message, json.status === 404 ? 'red' : 'green');
         });
     };
 

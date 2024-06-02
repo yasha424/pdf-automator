@@ -17,50 +17,61 @@ router.post('/send', async (req: Request, res: Response) => {
 
   if (emails == null || !Array.isArray(emails) || !emails.length) { return; };
 
+  const baseUrl = req.protocol + '://' + req.get('host');
   for (let email of emails) {
-    let result = await sendMail("PDF-Editor", email, "PDF-Editor", "This is a pdf.", pdfBytes);
-
-    if (result.status === 404) {
-      return res.json({ status: 404 });
-    }
+    const url = baseUrl + '/complaint?email=' + btoa(email);
+    sendMail('This is a PDF file', email, `PDF file from ${req.body.email}`,
+      `This PDF file was generated with PDF-Editor.\n If you think there is a mistake you can block your own email at ${url}`, pdfBytes, (result) => {
+        if (result.status !== 200) {
+          return res.json(result);
+        } else if (email === req.body.emails[req.body.emails.length - 1]) {
+          return res.json({ status: 200, message: 'PDF успішно надіслано.' });
+        }
+      }
+    );
   }
-  res.json({ status: 200 });
 });
 
-async function sendMail(name: string, email: string, subject: string, message: string, pdfBytes: Uint8Array) {
-  const myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
-  myHeaders.set('Authorization', 'Basic ' + btoa(process.env.MAIL_API_KEY + ":" + process.env.MAIL_API_SECRET));
+function sendMail(name: string, email: string, subject: string, message: string, pdfBytes: Uint8Array, callback?: (result: any) => void) {
+  DataBase.shared.get('blocked', ['1'], ['email'], [email], async (err, row) => {
+    if (row) {
+      return callback?.({ status: 404, message: 'Дана пошта заблокована.' });
+    }
+    const myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/json");
+    myHeaders.set('Authorization', 'Basic ' + btoa(process.env.MAIL_API_KEY + ":" + process.env.MAIL_API_SECRET));
+    
+    const data = JSON.stringify({
+      "Messages": [{
+        "From": { "Email": "jakob20022404@gmail.com", "Name": "name" },
+        "To": [{ "Email": email, "Name": name }],
+        "Subject": subject,
+        "TextPart": message,
+        "Attachments": [
+          {
+            "ContentType": "application/pdf",
+            "Filename": "pdf.pdf",
+            "Base64Content": Buffer.from(pdfBytes).toString('base64')
+          }
+        ]
+      }]
+    });
+    
+    const requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: data,
+    };
 
-  const data = JSON.stringify({
-    "Messages": [{
-      "From": { "Email": "jakob20022404@gmail.com", "Name": "name" },
-      "To": [{ "Email": email, "Name": name }],
-      "Subject": subject,
-      "TextPart": message,
-      "Attachments": [
-        {
-          "ContentType": "application/pdf",
-          "Filename": "pdf.pdf",
-          "Base64Content": Buffer.from(pdfBytes).toString('base64')
-        }
-      ]
-    }]
+    let response = await fetch("https://api.mailjet.com/v3.1/send", requestOptions);
+    let json: any = await response.json();
+    
+
+    if (json.Messages[0].Status === "error") {
+      return callback?.({ status: 404 });
+    }
+    return callback?.({ status: 200 });
   });
-
-  const requestOptions = {
-    method: 'POST',
-    headers: myHeaders,
-    body: data,
-  };
-
-  let response = await fetch("https://api.mailjet.com/v3.1/send", requestOptions);
-  let json: any = await response.json();
-
-  if (json.Messages[0].Status === "error") {
-    return { status: 404 };
-  }
-  return { status: 200 };
 }
 
 router.post('/save-pdf', async (req: Request, res: Response) => {
@@ -249,20 +260,35 @@ router.post('/fill-pdf/:id', (req: Request, res: Response) => {
         }
       }
     }
-    const pdfBytes = await new PDF().makePdf(pdfJson);
+    const pdfBytes = await new PDF().makePdf(pdfJson);    
 
     if (req.body.emails) {
+      const baseUrl = req.protocol + '://' + req.get('host');
+      
       for (const email of req.body.emails) {
-        const result = await sendMail('This is a PDF file', email, '', 'This PDF file was generated with PDF-Editor', pdfBytes);
-        if (result.status === 404) {
-          return res.json({ status: 404 });
-        }
+        const url = baseUrl + '/complaint?email=' + btoa(email);
+        sendMail('This is a PDF file', email, `PDF file from ${req.body.email}`, 
+          `This PDF file was generated with PDF-Editor.\n If you think there is a mistake you can block your own email at ${url}`, pdfBytes, (result) => {
+            if (result.status !== 200) {
+              return res.json(result);
+            } else if (email === req.body.emails[req.body.emails.length-1]) {
+              return res.json({ status: 200, message: 'PDF успішно надіслано.' });
+            }
+          }
+        );
       }
-      return res.json({ status: 200 });
     } else {
       return res.end(Buffer.from(pdfBytes));
     }
   });
+});
+
+router.post('/upload', async (req: Request, res: Response) => {
+  if (!req.body.pdfData) { return res.json({ status: 401 }); }
+  const pdfData = new Uint8Array(Object.values(req.body.pdfData));
+  
+  const pdfJson = await new PDF().loadPdf(pdfData);
+  return res.json({ status: 200, pdf: pdfJson });
 });
 
 export { router as pdfRouter };

@@ -29,6 +29,9 @@ app.get('/main', (req: Request, res: Response) => {
 app.get('/editor', (req: Request, res: Response) => {
   res.sendFile(__dirname + '/public/html/editor.html');
 });
+app.get('/complaint', (req: Request, res: Response) => {
+  res.sendFile(__dirname + '/public/html/complaint.html');
+});
 
 app.listen(port, () => {
   console.log(`[server]: Server is running on port ${port}`);

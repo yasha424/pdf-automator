@@ -32,11 +32,7 @@ async function sendPdf() {
   })
   .then(response => response.json())
   .then(json => {
-    if (json.status === 404) {
-      toggleAlert("Error delivering PDF. Check entered email and try again.", "red");
-    } else if (json.status === 200) {
-      toggleAlert("PDF successfully sent.", "green");
-    }
+    toggleAlert(json.message, json.status === 404 ? 'red' : 'green');
   });
 }
 

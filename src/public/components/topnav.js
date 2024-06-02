@@ -74,6 +74,4 @@ function deleteAllCookies() {
   });
 }
 
-window.onload = setParams;
-
 customElements.define('topnav-component', Topnav);

@@ -8,6 +8,7 @@ body {
 }
 
 #toolbox {
+  min-width: 62px;
   width: 80px;
   border-radius: 18px;
   padding-left: 8px;
@@ -41,8 +42,10 @@ body {
   position: relative;
   background-color: #fff;
   border: 2px solid #ccc;
-  width: 21cm;
-  height: 29.7cm;
+  width: 797px;
+  height: 1126px;
+  min-width: 797px;
+  min-height: 1126px;
   margin: auto;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
@@ -315,4 +318,18 @@ th, td {
 
 .alignment-input {
   margin-left: -4px;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.custom-file-upload {
+  display: inline-block;
+  padding: 4px 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  background-color: white;
+  border-radius: 8px;
+  margin-bottom: 8px;
 }

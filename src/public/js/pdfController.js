@@ -251,6 +251,32 @@ window.onload = (() => {
   const id = urlParams.get('id');
   const defaultId = urlParams.get('defaultId');
 
+  const fileInput = document.getElementById('file-upload');
+  fileInput.onchange = async () => {
+    if (!fileInput.files.length) { return; }
+    const buffer = await fileInput.files[0].arrayBuffer();
+
+    fetch("/api/upload", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      },
+      body: JSON.stringify({ pdfData: new Uint8Array(buffer)})
+    })
+      .then(response => response.json())
+      .then(async json => {
+        document.getElementById('canvas').innerHTML = '';
+        for (let page of json.pdf) {
+          for (const key in page) {
+            const element = await createElement(key, page[key].options, page[key].label, page[key].jpgData || page[key].pngData, page[key].selected, page[key].jpgData != undefined);
+            element.childNodes[1].name = page[key].name;
+            canvas.appendChild(element);
+          }
+        }
+
+        document.getElementById("filename").value = fileInput.files[0].name;
+      });
+  };
 
   if (id) {
     fetch("/api/pdf-template/" + id, {
@@ -322,6 +348,7 @@ async function createElement(type, options, label, imageData, selected, isJpeg) 
   deleteButton.classList.add("delete-button");
   deleteButton.onclick = () => {
     changed = true;
+    hideElementProperties();
     element.remove();
   }
 
