@@ -17,7 +17,7 @@ router.get('/register', async (req: Request, res: Response) => {
 
     DataBase.shared.get('users', ['1'], ['email'], [email], (err, user) => {
       if (!user) {
-        console.log(`${first}, ${last}, ${email}, ${hashedPassword}`);
+        console.log(`Register data: ${first}, ${last}, ${email}, ${hashedPassword}`);
         DataBase.shared.insert('users', 'firstName, lastName, email, password', `${first}, ${last}, ${email}, ${hashedPassword}`, (err) => {
           if (err == null) {
             res.cookie('email', email, { maxAge: 60 * 60 * 1000 });

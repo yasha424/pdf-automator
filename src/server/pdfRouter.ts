@@ -98,6 +98,7 @@ router.post('/save-pdf', async (req: Request, res: Response) => {
     if (err == null) {
       return res.json({ status: 200 })
     }
+    console.log(err);
     return res.json({ status: 404, message: 'Помилка.' })
   });
 });
@@ -199,6 +200,7 @@ router.post('/save-default-pdf', async (req: Request, res: Response) => {
     if (err == null) {
       return res.json({ status: 200 })
     }
+    console.log(err);
     return res.json({ status: 404 })
   });
 });
