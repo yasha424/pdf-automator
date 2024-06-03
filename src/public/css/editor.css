@@ -320,7 +320,7 @@ th, td {
   margin-left: -4px;
 }
 
-input[type="file"] {
+#file-upload {
   display: none;
 }
 

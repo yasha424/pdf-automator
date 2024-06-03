@@ -8,6 +8,7 @@ const scryptAsync = promisify(scrypt);
 
 router.get('/register', async (req: Request, res: Response) => {
   const { first, last, email, password, repassword } = req.query;
+  console.log('Register: ', req.query);
 
   if (first && last && email && password && typeof password === 'string' && password == repassword) {
     const salt = randomBytes(16).toString("hex");
@@ -16,7 +17,8 @@ router.get('/register', async (req: Request, res: Response) => {
 
     DataBase.shared.get('users', ['1'], ['email'], [email], (err, user) => {
       if (!user) {
-        DataBase.shared.insert('users', 'firstName, lastName, email, password', `"${first}", "${last}", "${email}", "${hashedPassword}"`, (err) => {
+        console.log(`"${first}", "${last}", "${email}", "${hashedPassword}"`);
+        DataBase.shared.insert('users', 'firstName, lastName, email, password', `${first}, ${last}, ${email}, ${hashedPassword}`, (err) => {
           if (err == null) {
             res.cookie('email', email, { maxAge: 60 * 60 * 1000 });
             res.cookie('firstName', first, { maxAge: 60 * 60 * 1000 });
@@ -38,6 +40,8 @@ router.get('/register', async (req: Request, res: Response) => {
 
 router.get('/login', async (req: Request, res: Response) => {
   const { email, password } = req.query;
+  console.log('Login', req.query);
+  
 
   if (!email || !password || (typeof password !== 'string')) {
     return res.redirect('/login?errCode=401');
@@ -55,6 +59,9 @@ router.get('/login', async (req: Request, res: Response) => {
       const hashedPasswordBuf = Buffer.from(hashedPassword, "hex");
       const suppliedPasswordBuf = (await scryptAsync(password, salt, 64)) as Buffer;
       const isPasswordValid = timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
+      console.log(hashedPasswordBuf, suppliedPasswordBuf);
+      console.log(isPasswordValid);
+      
 
       if (isPasswordValid) {
         res.cookie('email', user.email, { maxAge: 60 * 60 * 1000 });

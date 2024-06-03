@@ -286,7 +286,7 @@ router.post('/fill-pdf/:id', (req: Request, res: Response) => {
 router.post('/upload', async (req: Request, res: Response) => {
   if (!req.body.pdfData) { return res.json({ status: 401 }); }
   const pdfData = new Uint8Array(Object.values(req.body.pdfData));
-  
+
   const pdfJson = await new PDF().loadPdf(pdfData);
   return res.json({ status: 200, pdf: pdfJson });
 });

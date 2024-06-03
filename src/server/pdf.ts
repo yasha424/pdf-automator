@@ -11,20 +11,30 @@ class PDF {
   }
 
   async loadPdf(pdfData: Uint8Array): Promise<any[]> {
+    let pdfJson: any[] | PromiseLike<any[]> = [];
+
     const pdfDoc = await PDFDocument.load(pdfData);
     const pages = pdfDoc.getPages();
     const form = pdfDoc.getForm();
-
-    let pdfJson: any[] | PromiseLike<any[]> = [];
-
+    
     form.getFields().forEach(field => {
       if (field instanceof PDFTextField) {
         pdfJson.push(this.getTextField(field, pages[0].getHeight()));
       }
     });
 
-
     return pdfJson;
+  }
+
+  private getImageObject(image: any) {        
+    return {
+      image: {
+        options: {
+          x: 0, y: 0, width: image.width, height: image.height
+        },
+        pngData: Buffer.from(new Uint8ClampedArray(image.data)).toString('base64')
+      }
+    }
   }
 
   private getTextField(field: PDFTextField, height: number): any {
