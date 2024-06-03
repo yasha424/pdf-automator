@@ -2,9 +2,7 @@
   "name": "pdf-generator",
   "version": "1.0.0",
   "description": "",
-  "engines": {
-    "node": "22.2.0"
-  },
+  "engines": { "node": "20.x" },
   "main": "index.ts",
   "scripts": {
     "copy-files": "copyfiles -u 1 src/public/**/*.* src/public/*.* dist/src/",
@@ -36,9 +34,6 @@
     "express": "^4.19.2",
     "https": "^1.0.0",
     "pdf-lib": "^1.17.1",
-    "pdf-ts": "^0.0.2",
-    "pdfjs-dist": "^4.3.136",
-    "pdfkit-table-ts": "^0.0.14",
     "sqlite3": "^5.1.7"
   }
 }
