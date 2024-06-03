@@ -59,8 +59,8 @@ class DataBase {
     )`);
   }
 
-  insert(table: string, propetries: string, values: string, callback?: (err: Error | null) => void) {
-    this.db.run(`INSERT INTO ${table} (${propetries}) VALUES(${values.split(', ').map(() => { return '?' })})`, values.split(', '), callback);
+  insert(table: string, propetries: string[], values: string[], callback?: (err: Error | null) => void) {
+    this.db.run(`INSERT INTO ${table} (${propetries}) VALUES(${values.map(() => { return '?' })})`, values, callback);
   }
 
   get(table: string, propetries: string[], where?: string[], equals?: any[], callback?: (err: Error | null, result: any) => void) {

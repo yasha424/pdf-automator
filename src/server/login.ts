@@ -18,7 +18,7 @@ router.get('/register', async (req: Request, res: Response) => {
     DataBase.shared.get('users', ['1'], ['email'], [email], (err, user) => {
       if (!user) {
         console.log(`Register data: ${first}, ${last}, ${email}, ${hashedPassword}`);
-        DataBase.shared.insert('users', 'firstName, lastName, email, password', `${first}, ${last}, ${email}, ${hashedPassword}`, (err) => {
+        DataBase.shared.insert('users', ['firstName', 'lastName', 'email', 'password'], [first as string, last as string, email as string, hashedPassword], (err) => {
           if (err == null) {
             res.cookie('email', email, { maxAge: 60 * 60 * 1000 });
             res.cookie('firstName', first, { maxAge: 60 * 60 * 1000 });
@@ -96,7 +96,7 @@ router.get('/block-email/:email', async (req: Request, res: Response) => {
     return res.redirect('/complaint?success=0');
   }
 
-  DataBase.shared.insert('blocked', 'email', email, (err) => {
+  DataBase.shared.insert('blocked', ['email'], [email], (err) => {
     if (err) {
       return res.redirect('/complaint?success=0');
     }

@@ -94,7 +94,7 @@ router.post('/save-pdf', async (req: Request, res: Response) => {
 
   const pdfString = JSON.stringify(pdf).replace(/"/g, "&");
 
-  DataBase.shared.insert('pdfTemplates', 'userEmail, pdfJson, filename', `${email}, ${pdfString}, ${filename}`, (err) => {
+  DataBase.shared.insert('pdfTemplates', ['userEmail', 'pdfJson', 'filename'], [email, pdfString, filename], (err) => {
     if (err == null) {
       return res.json({ status: 200 })
     }
@@ -196,7 +196,7 @@ router.post('/save-default-pdf', async (req: Request, res: Response) => {
 
   const pdfString = JSON.stringify(pdf).replace(/"/g, "&");
 
-  DataBase.shared.insert('deafultPdfs', 'pdfJson, filename', `${pdfString}, ${filename}`, (err) => {
+  DataBase.shared.insert('deafultPdfs', ['pdfJson', 'filename'], [pdfString, filename], (err) => {
     if (err == null) {
       return res.json({ status: 200 })
     }
