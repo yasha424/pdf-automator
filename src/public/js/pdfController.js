@@ -268,7 +268,6 @@ window.onload = (() => {
         document.getElementById('canvas').innerHTML = '';
         for (let page of json.pdf) {
           for (const key in page) {
-            console.log(page[key]);
             const element = await createElement(key, page[key].options, page[key].label, page[key].jpgData || page[key].pngData, page[key].selected, page[key].jpgData != undefined);
             element.childNodes[1].name = page[key].name;
             canvas.appendChild(element);

@@ -15,7 +15,6 @@ form {
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   padding: 20px 20px;
   transition: transform 0.2s;
-  width: 500px;
   text-align: center;
   width: 500px;
 }
@@ -34,7 +33,6 @@ button {
   padding: 15px;
   border-radius: 10px;
   margin-top: 15px;
-  /* margin-bottom: 15px; */
   border: none;
   color: white;
   cursor: pointer;

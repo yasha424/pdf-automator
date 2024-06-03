@@ -58,10 +58,7 @@ router.get('/login', async (req: Request, res: Response) => {
       }
       const hashedPasswordBuf = Buffer.from(hashedPassword, "hex");
       const suppliedPasswordBuf = (await scryptAsync(password, salt, 64)) as Buffer;
-      const isPasswordValid = timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);
-      console.log(hashedPasswordBuf, suppliedPasswordBuf);
-      console.log(isPasswordValid);
-      
+      const isPasswordValid = timingSafeEqual(hashedPasswordBuf, suppliedPasswordBuf);      
 
       if (isPasswordValid) {
         res.cookie('email', user.email, { maxAge: 60 * 60 * 1000 });
