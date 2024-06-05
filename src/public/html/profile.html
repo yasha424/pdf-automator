@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профіль</title>
+  <link rel="stylesheet" href="/css/profile.css">
+  <script src="/components/topnav.js" type="text/javascript" defer></script>
+</head>
+
+<body>
+  <topnav-component></topnav-component>
+  <div class="main" id="main">
+    <h2>Профіль</h2>
+    <div class="card">
+      <div class="card-body">
+        <i class="fa fa-pen fa-xs edit"></i>
+        <table>
+          <tbody id="tbody">
+            <tr>
+              <td>Прізвище:</td>
+              <td id="lastName"></td>
+            </tr>
+            <tr>
+              <td>Імʼя:</td>
+              <td id="firstName"></td>
+            </tr>
+            <tr>
+              <td>Email:</td>
+              <td id="emailValue"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+</body>
+<script>
+  window.onload = () => {
+    setParams();
+
+    document.getElementById('emailValue').innerText = getCookie('email');
+    document.getElementById('firstName').innerText = getCookie('firstName');
+    document.getElementById('lastName').innerText = getCookie('lastName');
+
+    console.log(getCookie('admin'));
+    if (getCookie('admin') == 1) {
+      const tBody = document.getElementById('tbody');
+      const adminLabel = document.createElement('td');
+      adminLabel.innerText = "Адміністратор:";
+      const adminValue = document.createElement('td');
+      adminValue.innerText = "Так";
+      const admin = document.createElement('tr');
+      admin.appendChild(adminLabel);
+      admin.appendChild(adminValue);
+      tBody.appendChild(admin);
+
+      const main = document.getElementById('main');
+      const blockUserLink = document.createElement('a');
+      blockUserLink.href = '/block-user';
+      blockUserLink.innerText = 'Заблокувати користувача'
+      main.appendChild(blockUserLink);
+    }
+  };
+</script>
+</html>

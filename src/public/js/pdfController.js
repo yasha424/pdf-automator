@@ -327,10 +327,15 @@ window.onload = (() => {
 });
 
 function removeButtons() {
+  console.log(getCookie('blocked'));
   if (getCookie('admin') != true) {
     document.getElementById('saveDefaultButton').remove();
   }
   if (!getCookie('email')) {
+    document.getElementById('shareButton').remove();
+    document.getElementById('saveButton').remove();
+  }
+  if (getCookie('blocked') == 1) {
     document.getElementById('shareButton').remove();
     document.getElementById('saveButton').remove();
   }

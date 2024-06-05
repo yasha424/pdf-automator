@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Заблокувати користувача</title>
+  <link rel="stylesheet" href="/css/block-user.css">
+  <script src="/components/topnav.js" type="text/javascript" defer></script>
+</head>
+
+<body>
+  <topnav-component></topnav-component>
+  <div id="users-div">
+    <h2>Знайти користувача</h2>
+    <div>
+      <input type="text" id="searchField" placeholder="Введіть пошту користувача" on>
+      <button id="searchButton" class="search-button" action="findUsers()">Пошук</button>
+    </div>
+  </div>
+</body>
+<script>
+  const searchField = document.getElementById('searchField');
+  const searchButton = document.getElementById('searchButton');
+
+  searchButton.onclick = () => {
+    const usersDiv = document.getElementById('users-div');
+    if (usersDiv.childNodes.length === 6) {
+      usersDiv.childNodes[5].remove();
+    }
+    fetch(`/api/get-users/${searchField.value}`, {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json; charset=UTF-8"
+      },
+      body: JSON.stringify({
+        email: getCookie("email")
+      })
+    })
+      .then(response => response.json())
+      .then(json => {
+        const list = document.createElement('div');
+        list.classList.add('users-list');
+
+        for (const user of json.users) {
+          const userElement = document.createElement("div");
+          userElement.classList.add('user-item');
+          userElement.innerText = 'Email: ' + user.email + ', Імʼя: ' + user.firstName + ', Прізвище: ' + user.lastName;
+          list.appendChild(userElement);
+
+          const blockButton = document.createElement('button');
+          blockButton.classList.add('block-button');
+          blockButton.innerText = user.blocked === 0 ? 'Заблокувати' : 'Розблокувати';
+          blockButton.onclick = () => {
+            fetch(`/api/block-user/${user.email}`, {
+              method: "POST",
+              headers: {
+                "Content-type": "application/json; charset=UTF-8"
+              },
+              body: JSON.stringify({
+                email: getCookie("email"),
+                block: user.blocked === 0
+              })
+            })
+              .then(response => response.json())
+              .then(json => {
+                if (json.status === 200) {
+                  blockButton.innerText = blockButton.innerText === 'Заблокувати' ? 'Розблокувати' : 'Заблокувати'
+                }
+              });
+          };
+
+          userElement.appendChild(blockButton);
+        }
+
+        usersDiv.appendChild(list);
+      });
+  };
+
+  searchField.addEventListener("keypress", function (event) {
+    if (event.keyCode == 13) {
+      searchButton.click();
+    }
+  });
+
+
+  window.onload = () => {
+    setParams();
+  };
+</script>
+
+</html>

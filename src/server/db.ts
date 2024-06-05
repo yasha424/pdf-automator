@@ -18,7 +18,7 @@ class DataBase {
     this.createDefaultPdfsTable();
     this.createBlockedAddressesTable();
 
-    // this.getAll('pdfTemplates', ['*'], undefined, undefined, (err, rows) => {
+    // this.getAll('users', ['*'], undefined, undefined, (err, rows) => {
     //   console.log(rows);
     // })
   }
@@ -37,7 +37,8 @@ class DataBase {
       lastName VARCHAR(200) NOT NULL,
       email VARCHAR(200) NOT NULL,
       password VARCHAR(200) NOT NULL,
-      admin BOOLEAN NOT NULL DEFAULT FALSE
+      admin BOOLEAN NOT NULL DEFAULT FALSE,
+      blocked BOOLEAN NOT NULL DEFAULT FALSE
     )`);
   }
 
@@ -116,7 +117,7 @@ class DataBase {
 
   update(table: string, set: string[], where?: string[], data?: any[], equals?: any[], callback?: (err: Error | null) => void) {
     let request = `UPDATE ${table} `;
-    if (set && data && set.length == data.length) {
+    if (set && data) {
       request += `SET `;
       for (let i = 0; i < set.length; i++) {
         request += `${set[i]} = ?`;
@@ -127,7 +128,7 @@ class DataBase {
     }
 
     if (where && equals && where?.length == equals?.length) {
-      request += `WHERE `;
+      request += ` WHERE `;
       for (let i = 0; i < where?.length; i++) {
         request += `${where?.[i]} = ?`;
         if (i !== where?.length - 1) {
@@ -135,7 +136,7 @@ class DataBase {
         }
       }
     }
-
+    
     this.db.run(request, data, callback);
   }
 

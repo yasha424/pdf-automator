@@ -24,6 +24,7 @@ router.get('/register', async (req: Request, res: Response) => {
             res.cookie('firstName', first, { maxAge: 60 * 60 * 1000 });
             res.cookie('lastName', last, { maxAge: 60 * 60 * 1000 });
             res.cookie('admin', false, { maxAge: 60 * 60 * 1000 });
+            res.cookie('blocked', false, { maxAge: 60 * 60 * 1000 });
     
             return res.redirect('/main');
           }
@@ -46,7 +47,7 @@ router.get('/login', async (req: Request, res: Response) => {
     return res.redirect('/login?errCode=401');
   }
 
-  DataBase.shared.get('users', ['firstName', 'lastName', 'email', 'password', 'admin'], ['email'], [email], async (err, user) => {
+  DataBase.shared.get('users', ['*'], ['email'], [email], async (err, user) => {
     if (err) {
       return res.redirect('/login?errCode=400');
     }
@@ -64,6 +65,7 @@ router.get('/login', async (req: Request, res: Response) => {
         res.cookie('firstName', user.firstName, { maxAge: 60 * 60 * 1000 });
         res.cookie('lastName', user.lastName, { maxAge: 60 * 60 * 1000 });
         res.cookie('admin', user.admin, { maxAge: 60 * 60 * 1000 });
+        res.cookie('blocked', user.blocked, { maxAge: 60 * 60 * 1000 });
 
         return res.redirect('/main');
       }
@@ -77,7 +79,7 @@ router.post('/change-privilege', async (req: Request, res: Response) => {
   const { email, key, admin } = req.body;
   
   if (key == process.env.CHANGE_PRIVILEGE_KEY) {
-    DataBase.shared.update('users', ['admin'], ['email'], [admin], [email, admin], err => {
+    DataBase.shared.update('users', ['admin'], ['email'], [admin, email], [email], err => {
       if (err == null) {
         return res.json({ status: 200 });
       } else {
@@ -103,5 +105,52 @@ router.get('/block-email/:email', async (req: Request, res: Response) => {
   })
 });
 
+router.post('/get-users/:email', (req: Request, res: Response) => {
+  const email = req.body.email;
+  if (!email) {
+    return res.json({ status: 401, message: 'Ви повинні бути авторизовані, для того, щоб заблокувати іншого користувача.' });
+  }
+
+  DataBase.shared.get('users', ['admin'], ['email'], [email], (err, user) => {
+    if (!err) {
+      if (user.admin == true) {
+        DataBase.shared.getAll('users', ['*'], undefined, undefined, (err, users) => {
+          const filteredUsers = users.filter(user => {
+            return user.email.startsWith(req.params.email);
+          }); 
+          return res.json({ status: 200, users: filteredUsers });
+        });
+
+      } else {
+        return res.json({ status: 402, message: 'Ви повинні бути адміністратором, для того, щоб заблокувати іншого користувача.' });
+      }
+    }
+  });
+}); 
+
+router.post('/block-user/:email', (req: Request, res: Response) => {
+  const email = req.body.email;
+  if (!email) {
+    return res.json({ status: 401, message: 'Ви повинні бути авторизовані, для того, щоб заблокувати іншого користувача.' });
+  }
+
+  DataBase.shared.get('users', ['admin'], ['email'], [email], (err, user) => {
+    if (!err) {
+      if (user.admin == true) {
+        DataBase.shared.update('users', ['blocked'], ['email'], [req.body.block, req.params.email], [req.params.email], (err) => {
+          if (!err) {
+            res.json({ status: 200 });
+          } else {
+            console.log(err);
+            
+            return res.json({ status: 404, error: err });
+          }
+        });
+      } else {
+        return res.json({ status: 402, message: 'Ви повинні бути адміністратором, для того, щоб заблокувати іншого користувача.' });
+      }
+    }
+  });
+}); 
 
 export { router as loginRouter };

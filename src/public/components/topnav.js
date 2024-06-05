@@ -7,9 +7,9 @@ class Topnav extends HTMLElement {
   <div class="topnav">
     <div class="active" id="home-link"><a id="logo" href="/main"><img src="/images/logo.png"></a><h3 class="logo-text" id="logoText">PDF-Editor</h3></div>
     <div id="myLinks">
-      <div href="#profile" id="user">
-        <a href="#profile" id="email"></a>
-        <a href="#profile" id="name"></a>
+      <div>
+        <a href="/profile" id="email"></a>
+        <a href="/profile" id="name"></a>
       </div>
       <div><a href="#contact">Контакти</a></div>
       <div><a onclick="logout()" id="logout">Вийти з акаунту</a></div>

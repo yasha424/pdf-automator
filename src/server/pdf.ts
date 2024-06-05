@@ -10,6 +10,13 @@ class PDF {
     this.fontBytes = fs.readFileSync(pathToFileURL('./src/public/fonts/Roboto-Regular.ttf'));
   }
 
+  async getFont(): Promise<PDFFont> {
+    let pdfDoc = await PDFDocument.create();
+    pdfDoc.registerFontkit(fontkit);
+    const customFont = await pdfDoc.embedFont(this.fontBytes);
+    return customFont;
+  }
+
   async loadPdf(pdfData: Uint8Array): Promise<any[]> {
     let pdfJson: any[] | PromiseLike<any[]> = [];
 

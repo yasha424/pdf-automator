@@ -33,6 +33,12 @@ app.get('/editor', (req: Request, res: Response) => {
 app.get('/complaint', (req: Request, res: Response) => {
   res.sendFile(__dirname + '/public/html/complaint.html');
 });
+app.get('/profile', (req: Request, res: Response) => {
+  res.sendFile(__dirname + '/public/html/profile.html');
+});
+app.get('/block-user', (req: Request, res: Response) => {
+  res.sendFile(__dirname + '/public/html/block-user.html');
+});
 
 app.listen(port, () => {
   console.log(`[server]: Server is running on port ${port}`);
