@@ -327,7 +327,6 @@ window.onload = (() => {
 });
 
 function removeButtons() {
-  console.log(getCookie('blocked'));
   if (getCookie('admin') != true) {
     document.getElementById('saveDefaultButton').remove();
   }
@@ -351,6 +350,7 @@ async function createElement(type, options, label, imageData, selected, isJpeg) 
 
   const deleteButton = document.createElement("button");
   deleteButton.classList.add("delete-button");
+
   deleteButton.onclick = () => {
     changed = true;
     hideElementProperties();

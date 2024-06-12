@@ -28,7 +28,7 @@
     if (usersDiv.childNodes.length === 6) {
       usersDiv.childNodes[5].remove();
     }
-    fetch(`/api/get-users/${searchField.value}`, {
+    fetch(`/api/get-users/${searchField.value || 'all'}`, {
       method: "POST",
       headers: {
         "Content-type": "application/json; charset=UTF-8"
@@ -39,38 +39,66 @@
     })
       .then(response => response.json())
       .then(json => {
+        if (!json.users) { return; }
+
         const list = document.createElement('div');
         list.classList.add('users-list');
 
         for (const user of json.users) {
           const userElement = document.createElement("div");
           userElement.classList.add('user-item');
-          userElement.innerText = 'Email: ' + user.email + ', Імʼя: ' + user.firstName + ', Прізвище: ' + user.lastName;
+          userElement.innerText = 'Email: ' + user.email + ', Імʼя: ' + user.firstName + ', Прізвище: ' + user.lastName + ', Адміністратор: ' + (user.admin === 1 ? 'Так' : 'Ні');
           list.appendChild(userElement);
 
-          const blockButton = document.createElement('button');
-          blockButton.classList.add('block-button');
-          blockButton.innerText = user.blocked === 0 ? 'Заблокувати' : 'Розблокувати';
-          blockButton.onclick = () => {
-            fetch(`/api/block-user/${user.email}`, {
-              method: "POST",
-              headers: {
-                "Content-type": "application/json; charset=UTF-8"
-              },
-              body: JSON.stringify({
-                email: getCookie("email"),
-                block: user.blocked === 0
+          if (getCookie("email") !== user.email) {
+            const blockButton = document.createElement('button');
+            blockButton.classList.add('block-button');
+            blockButton.innerText = user.blocked === 0 ? 'Заблокувати' : 'Розблокувати';
+            blockButton.onclick = () => {
+              fetch(`/api/block-user/${user.email}`, {
+                method: "POST",
+                headers: {
+                  "Content-type": "application/json; charset=UTF-8"
+                },
+                body: JSON.stringify({
+                  email: getCookie("email"),
+                  block: user.blocked === 0
+                })
               })
-            })
-              .then(response => response.json())
-              .then(json => {
-                if (json.status === 200) {
-                  blockButton.innerText = blockButton.innerText === 'Заблокувати' ? 'Розблокувати' : 'Заблокувати'
-                }
-              });
-          };
+                .then(response => response.json())
+                .then(json => {
+                  if (json.status === 200) {
+                    blockButton.innerText = blockButton.innerText === 'Заблокувати' ? 'Розблокувати' : 'Заблокувати';
+                  }
+                });
+            };
 
-          userElement.appendChild(blockButton);
+            userElement.appendChild(blockButton);
+
+            const adminButton = document.createElement('button');
+            adminButton.classList.add('admin-button');
+            adminButton.innerText = user.admin === 0 ? 'Зробити адміністратором' : 'Зробити звичайним користувачем';
+            adminButton.onclick = () => {
+              fetch(`/api/change-privilege/${user.email}`, {
+                method: "POST",
+                headers: {
+                  "Content-type": "application/json; charset=UTF-8"
+                },
+                body: JSON.stringify({
+                  email: getCookie("email"),
+                  admin: user.admin === 0
+                })
+              })
+                .then(response => response.json())
+                .then(json => {
+                  if (json.status === 200) {
+                    adminButton.innerText = adminButton.innerText === 'Зробити адміністратором' ? 'Зробити звичайним користувачем' : 'Зробити адміністратором';
+                  }
+                });
+            };
+
+            userElement.appendChild(adminButton);
+          }
         }
 
         usersDiv.appendChild(list);

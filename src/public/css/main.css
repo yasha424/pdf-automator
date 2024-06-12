@@ -1,11 +1,11 @@
 #template-list, #default-template-list {
   width: calc(100% - 4px);
-  border-radius: 15px;
+  border-radius: 16px;
   margin-top: 12px;
   padding-top: 12px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   background-color: rgba(255, 0, 0, 0.08);
-  padding-bottom: 2px;
+  padding-bottom: 0.1px;
 }
 
 #template-div {
@@ -44,7 +44,7 @@
 
 .pdf-item {
   height: 120px;
-  border-radius: 12px;
+  border-radius: 10px;
   margin-bottom: 12px;
   margin-left: 12px;
   margin-right: 12px;

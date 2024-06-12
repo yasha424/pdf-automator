@@ -43,7 +43,6 @@
     document.getElementById('firstName').innerText = getCookie('firstName');
     document.getElementById('lastName').innerText = getCookie('lastName');
 
-    console.log(getCookie('admin'));
     if (getCookie('admin') == 1) {
       const tBody = document.getElementById('tbody');
       const adminLabel = document.createElement('td');

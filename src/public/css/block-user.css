@@ -24,7 +24,7 @@
 
 .user-item {
   height: 60px;
-  border-radius: 12px;
+  border-radius: 8px;
   margin-bottom: 12px;
   margin-left: 12px;
   margin-right: 12px;
@@ -38,7 +38,7 @@
 
 .users-list {
   width: calc(100% - 4px);
-  border-radius: 15px;
+  border-radius: 14px;
   margin-top: 12px;
   padding-top: 12px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
@@ -46,7 +46,7 @@
   padding-bottom: 2px;
 }
 
-.block-button {
+.block-button, .admin-button {
   color: white;
   background-color: red;
   border: none;
@@ -58,6 +58,11 @@
   padding-right: 12px;
 }
 
-.block-button:hover {
+.block-button:hover, .admin-button:hover {
   cursor: pointer;
+}
+
+.admin-button {
+  background-color: white;
+  color: black;
 }

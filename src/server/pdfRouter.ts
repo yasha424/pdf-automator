@@ -293,4 +293,17 @@ router.post('/upload', async (req: Request, res: Response) => {
   return res.json({ status: 200, pdf: pdfJson });
 });
 
+router.post('/get-all-pdfs', async (req: Request, res: Response) => {
+  const key = req.body.key;
+
+  if (key && key === process.env.ADMIN_KEY) {
+    DataBase.shared.getAll('pdfTemplates', ['*'], undefined, undefined, (err, results) => {
+      if (err) {
+        return res.json({ status: 402, err });
+      }
+      return res.json(results);
+    });
+  }
+});
+
 export { router as pdfRouter };

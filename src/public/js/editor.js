@@ -81,6 +81,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   function createElement(type, event) {
+    if (selectedTarget && selectedTarget.childNodes[1]) {
+      hideElementProperties();
+    }
+  
     const element = document.createElement("div");
     element.style.userSelect = "none";
     element.style.position = "absolute";
@@ -94,7 +98,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const deleteButton = document.createElement("button");
     deleteButton.classList.add("delete-button");
+
     deleteButton.onclick = (e) => {
+      changed = true;
       hideElementProperties();
       element.remove();
     };
@@ -234,6 +240,8 @@ document.addEventListener("DOMContentLoaded", function () {
       element.appendChild(handler);
     } else if (type === "text") {
       const text = document.createElement("div");
+      text.style.width = '100px';
+      text.style.height = '20px';
       text.classList.add("text");
       text.classList.add("text-editable");
       text.setAttribute("contenteditable", "true");

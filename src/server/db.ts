@@ -17,10 +17,6 @@ class DataBase {
     this.createUserTable();
     this.createDefaultPdfsTable();
     this.createBlockedAddressesTable();
-
-    // this.getAll('users', ['*'], undefined, undefined, (err, rows) => {
-    //   console.log(rows);
-    // })
   }
 
   private createBlockedAddressesTable() {
