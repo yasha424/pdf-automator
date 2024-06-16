@@ -33,6 +33,14 @@ class PDF {
     return pdfJson;
   }
 
+  static getForm(pdfJson: any[]): any {
+    const filteredPdf = pdfJson.filter((el: any, index: number) => {
+      return ['checkBox', 'radioGroup', 'textField'].includes(Object.keys(el)[0]);
+    });
+
+    return filteredPdf;
+  }
+
   private getImageObject(image: any) {        
     return {
       image: {

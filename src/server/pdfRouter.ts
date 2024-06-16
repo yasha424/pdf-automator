@@ -112,7 +112,7 @@ router.get('/pdf-templates/:email', (req: Request, res: Response) => {
   DataBase.shared.getAll('pdfTemplates', ['*'], ['userEmail'], [req.params.email], (err, rows) => {
     let pdfs = [];
     for (let row of rows) {
-      pdfs.push({ pdf: JSON.parse(row.pdfJson.replace(/"/g, "").replace(/&/g, "\"")), id: row.id, filename: row.filename });
+      pdfs.push({ id: row.id, filename: row.filename, form: PDF.getForm(JSON.parse(row.pdfJson.replace(/&/g, "\""))) });
     }
     
     return res.json(pdfs);
@@ -153,11 +153,11 @@ router.delete('/pdf-templates/:email/:id', (req: Request, res: Response) => {
 });
 
 router.get('/default-pdfs', (req: Request, res: Response) => {
-  DataBase.shared.getAll('deafultPdfs', ['*'], undefined, undefined, (err, rows) => {
+  DataBase.shared.getAll('deafultPdfs', ['id', 'filename'], undefined, undefined, (err, rows) => {
     if (err != null) { return res.json({ status: 404 }); }
     let pdfs = [];
     for (let row of rows) {
-      pdfs.push({ pdf: JSON.parse(row.pdfJson.replace(/"/g, "").replace(/&/g, "\"")), id: row.id, filename: row.filename });
+      pdfs.push({ id: row.id, filename: row.filename });
     }
     return res.json(pdfs);
   });
@@ -221,16 +221,11 @@ router.delete('/default-pdf/:id', (req: Request, res: Response) => {
 router.get('/get-pdf-form/:id', (req: Request, res: Response) => {
   if (!req.params.id) {
     return res.json({ status: 402 });
-
   }
   DataBase.shared.get('pdfTemplates', ['*'], ['id'], [req.params.id], (err, pdf) => {
     if (err) { return; }
     const pdfJson = JSON.parse(pdf.pdfJson.replace(/&/g, "\""));
-    const filteredPdf = pdfJson.filter((el: any, index: number) => {
-      return ['checkBox', 'radioGroup', 'textField'].includes(Object.keys(el)[0]);
-    });
-
-    return res.json(filteredPdf);
+    return res.json(PDF.getForm(pdfJson));
   });
 });
 

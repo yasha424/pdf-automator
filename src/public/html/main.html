@@ -139,16 +139,7 @@
           fillForm.style.display = "block";
           fillFormDiv.style.display = "block";
 
-          fetch("/api/get-pdf-form/" + pdf.id, {
-            method: 'GET',
-            headers: {
-              "Content-type": "application/json; charset=UTF-8"
-            }
-          })
-            .then(res => res.json())
-            .then(json => {
-              createFillForm(json, pdf.id);
-            });
+          createFillForm(pdf.form, pdf.id, pdf.filename);
         } else {
           fillForm.style.display = "none";
           fillFormDiv.style.display = "none";
@@ -200,13 +191,20 @@
     "radioGroup": "Радіокнопка",
   };
 
-  function createFillForm(pdfJson, pdfId) {
+  function createFillForm(pdfJson, pdfId, filename) {
     const list = document.getElementById('fillInputs');
     list.innerHTML = '';
+
+    const fileName = document.createElement('strong');
+    fileName.innerText = filename;
+    list.appendChild(fileName);
+
     document.getElementById('fillInputs');
 
     if (document.getElementById('buttonsDiv')) {
       document.getElementById('buttonsDiv').remove();
+      document.getElementById('share-div').remove();
+      document.getElementById('fillForm').style.top = '50%';
     }
 
     for (const element of pdfJson) {
@@ -289,6 +287,7 @@
 
     const shareDiv = document.createElement('div');
     shareDiv.classList.add('share-div');
+    shareDiv.id = 'share-div';
     shareDiv.style.display = 'none';
     const emailInput = document.createElement('textarea');
     emailInput.classList.add('email-input');
@@ -321,8 +320,10 @@
 
     shareButton.onclick = () => {
       if (shareDiv.style.display === 'none') {
+        document.getElementById('fillForm').style.top = '59.7%';
         shareDiv.style.display = 'grid';
       } else {
+        document.getElementById('fillForm').style.top = '50%';
         shareDiv.style.display = 'none';
       }
     };
